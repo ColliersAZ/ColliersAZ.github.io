@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap');
+
+:root {
+  /* Colliers primary palette */
+  --bg-default: #FFFFFF;          /* White */
+  --bg-projects: #DBE5FF;         /* Pale Blue Grey */
+  --card-bg: #FFFFFF;             /* White */
+  --green-header: #25408F;        /* Colliers Dark Blue (used for headings) */
+  --orange-accent: #1C54F4;       /* Medium Blue (CTA / buttons) */
+  --orange-hover: #4D93FF;        /* Light Blue (hover state) */
+  --text-color: #353E59;          /* Deep Blue Grey (body text) */
+  --border-light: #ACBBE8;        /* Light Blue Grey (borders, lines) */
+}
+
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  background-color: var(--bg-default);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Gill Sans Extrabold', serif;
+  font-weight: 550;
+  letter-spacing: 0.5px;
+  color: var(--green-header);
+}
+
+p {
+  margin-bottom: 1.25rem;
+}
+
+/* Links */
+a {
+  color: var(--orange-accent);
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+a:hover {
+  color: var(--orange-hover);
+  text-decoration: underline;
+}
+
+/* Navbar & Footer */
+.navbar {
+  font-size: 0.95rem;
+  font-weight: 500;
+  background-color: var(--bg-default);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-light);
+}
+
+footer {
+  text-align: center;
+  padding: 24px 20px;
+  background-color: var(--bg-default);
+  border: none;
+  font-size: 0.9rem;
+  color: #7B8BBD; /* Medium Blue Grey */
+  margin-top: 0;
+}
+
+/* Header */
+header {
+  background-color: var(--bg-default);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* Project Section */
+.projects-section {
+  background-color: var(--bg-projects);
+  padding: 60px 0 80px;
+}
+
+/* Grid */
+.projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Card */
+.project-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+}
+.project-card img {
+  width: 100%;
+  height: auto;
+  padding: 12px 12px 0 12px;      /* Add top and side padding */
+  border-top-left-radius: 12px;   /* Match card corners */
+  border-top-right-radius: 12px;
+  object-fit: cover;
+}
+
+.project-card .content {
+  padding: 20px;
+}
+.project-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  color: var(--green-header);
+}
+.project-card p {
+  font-size: 1rem;
+}
+.project-card a {
+  margin-top: auto;
+  display: inline-block;
+  padding: 8px 14px;
+  margin-top: 16px;
+  color: #FFFFFF;
+  background-color: var(--orange-accent);
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+}
+.project-card a:hover {
+  background-color: var(--orange-hover);
+}
+
+/* Pagination */
+#pagination {
+  margin-top: 40px;
+  padding-bottom: 60px;
+  background-color: transparent;
+}
+
+.page-button {
+  margin: 0 6px;
+  padding: 8px 14px;
+  border: none;
+  background-color: var(--card-bg);
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: var(--text-color);
+}
+.page-button:hover {
+  background-color: var(--orange-accent);
+  color: #FFFFFF;
+}
+.page-button.active {
+  background-color: var(--green-header);
+  color: #FFFFFF;
+}
+
+/* Social Icons */
+.social-icons a {
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+.social-icons a:hover {
+  color: var(--orange-accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .projects {
+    grid-template-columns: 1fr;
+  }
+  header h1 {
+    font-size: 2rem;
+  }
+}
+
+/* Navbar brand & links in Colliers blue */
+.navbar-brand,
+.navbar-nav .nav-link {
+  font-family: 'Gloock', serif;
+  color: #25408F !important;  /* Colliers Dark Blue */
+  font-weight: bold;
+}
+
+.navbar-toggler {
+  padding: 0.2rem 0.4rem;   /* reduce the clickable area */
+}
+
+.navbar-toggler-icon {
+  width: 20px;   /* smaller than default 30px */
+  height: 20px;  /* smaller than default 30px */
+}
