@@ -200,3 +200,11 @@ header {
   width: 20px;   /* smaller than default 30px */
   height: 20px;  /* smaller than default 30px */
 }
+
+.date {
+  font-size: 0.85rem;
+  color: #a4a4a4;
+  margin: -8px 0 8px 0;
+  font-weight: 600;
+  display: block;
+}
