@@ -3,26 +3,30 @@ const projects = [
   title: "Q3 MSCI Update: Phoenix Investment Activity Stabilizes in Q3",
   description: "Nationally, Phoenix ranked 9th in total investment sales volume in Q3, supported by strong sector performance, including the 5th-highest industrial sales volume and the 6th-highest office sales volume across U.S. markets.",
   image: "images/sales.png",
-  link: "https://colliersaz.github.io/Q3SalesActivity/"
+  link: "https://colliersaz.github.io/Q3SalesActivity/",
+  date: "October 10, 2025"
 },
 {
   title: "Who’s Buying Phoenix CRE?",
   description: "Phoenix’s buyer mix is shifting: private investors now dominate office as institutions pull back, while industrial remains institutionally anchored with rising private activity.",
   image: "images/buyer.png",
-  link: "BuyerProfile.pdf"
+  link: "BuyerProfile.pdf",
+  date: "October 3, 2025"
 },
 {
   title: "Loop 101 Corridor Powers North Phoenix Growth",
   description: "An interactive story map highlighting how the Loop 101 corridor, stretching from 51st Street to Pima Road, is powering growth across North Phoenix. This corridor has become a hub for large-scale office, industrial, multifamily, and retail development, with new projects reshaping the region’s economic and real estate landscape.",
   image: "images/loop101.gif",
-  link: "https://colliersaz.github.io/Loop101/"
+  link: "https://colliersaz.github.io/Loop101/",
+  date: "September 15, 2025"
 },
     
     {
   title: "Repurposing Phoenix Offices to Industrial and Apartments",
   description: "An interactive story map highlighting how office properties across Phoenix are being transformed into industrial, multifamily, retail, and other uses. Nearly 70% of these conversions have shifted toward industrial uses, including data centers and self-storage facilities.",
   image: "images/conversion.gif",
-  link: "https://atlas.colliers.com/portal/apps/storymaps/stories/fa47e7901b4a42acbe40919e36fec81c"
+  link: "https://atlas.colliers.com/portal/apps/storymaps/stories/fa47e7901b4a42acbe40919e36fec81c",
+  date: "April 18, 2025"
 }
 
 
@@ -54,18 +58,18 @@ function displayProjects() {
       card.classList.add('project-card');
 
       card.innerHTML = `
-        <div class="thumbnail-wrapper">
-          <img src="${project.image}" alt="${project.title}">
-          <div class="overlay">
-            
-          </div>
-        </div>
-        <div class="content">
-          <h3>${project.title}</h3>
-          <p>${project.description}</p>
-          <a href="${project.link}" target="_blank"><b>Read More</b></a>
-        </div>
-      `;
+  <div class="thumbnail-wrapper">
+    <img src="${project.image}" alt="${project.title}">
+    <div class="overlay"></div>
+  </div>
+  <div class="content">
+    <h3>${project.title}</h3>
+    <p class="date">${project.date}</p>   <!-- DATE RIGHT HERE -->
+    <p>${project.description}</p>
+    <a href="${project.link}" target="_blank"><b>Read More</b></a>
+  </div>
+`;
+
 
       projectsContainer.appendChild(card);
     });
