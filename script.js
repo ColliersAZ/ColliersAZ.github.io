@@ -1,5 +1,12 @@
 const projects = [
   {
+  title: "Phoenix Industrial Buildings Trend Smaller as Big-Box Pipeline Winds Down",
+  description: "Phoenix industrial buildings are trending smaller as the market shifts away from mega big-box development. Over the past five years, the typical new industrial project has become noticeably smaller, reflecting changes in tenant demand and development economics.",
+  image: "images/size.jpg",
+  link: "IndSizeShift.pdf",
+  date: "December 8, 2025"
+},
+  {
   title: "Q3 MSCI Update: Phoenix Investment Activity Stabilizes in Q3",
   description: "Nationally, Phoenix ranked 9th in total investment sales volume in Q3, supported by strong sector performance, including the 5th-highest industrial sales volume and the 6th-highest office sales volume across U.S. markets.",
   image: "images/sales.png",
@@ -125,7 +132,6 @@ function updatePaginationButtons() {
 
 // Initial load
 displayProjects();
-
 
 
 
