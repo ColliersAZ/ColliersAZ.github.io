@@ -1,10 +1,18 @@
 const projects = [
+{
+  title: "Q4 MSCI Update: Phoenix Investment Activity Rebounds",
+  description: "In Q4, investment activity in Phoenix increased 20% quarter over quarter and 36.5% year over year, marking the second-highest quarterly volume since the end of 2022.",
+  image: "images/sales.png",
+  link: "IndSizeShift.pdf",
+  date: "December 8, 2025"
+},
+  
   {
   title: "Phoenix Industrial Buildings Trend Smaller as Big-Box Pipeline Winds Down",
   description: "Phoenix industrial buildings are trending smaller as the market shifts away from mega big-box development. Over the past five years, the typical new industrial project has become noticeably smaller, reflecting changes in tenant demand and development economics.",
   image: "images/size.jpg",
-  link: "IndSizeShift.pdf",
-  date: "December 8, 2025"
+  link: "https://colliersaz.github.io/Q4SalesActivity/",
+  date: "February 10, 2025"
 },
   {
   title: "Q3 MSCI Update: Phoenix Investment Activity Stabilizes in Q3",
@@ -132,6 +140,7 @@ function updatePaginationButtons() {
 
 // Initial load
 displayProjects();
+
 
 
 
