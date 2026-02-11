@@ -2,7 +2,7 @@ const projects = [
 {
   title: "Q4 MSCI Update: Phoenix Investment Activity Rebounds",
   description: "In Q4, investment activity in Phoenix increased 20% quarter over quarter and 36.5% year over year, marking the second-highest quarterly volume since the end of 2022.",
-  image: "images/sales.png",
+  image: "images/sales1.png",
   link: "IndSizeShift.pdf",
   date: "December 8, 2025"
 },
@@ -140,6 +140,7 @@ function updatePaginationButtons() {
 
 // Initial load
 displayProjects();
+
 
 
 
