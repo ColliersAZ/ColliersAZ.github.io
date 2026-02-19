@@ -1,18 +1,26 @@
 const projects = [
 {
+  title: "Top Office and Industrial Leasing Deals in Phoenix – 2025",
+  description: "The 2025 Phoenix office and industrial markets saw strong leasing momentum with record net absorption in office space and multiple large industrial commitments, highlighted by several million-square-foot deals in Southwest Phoenix and Scottsdale Airpark.",
+  image: "images/leasingdeals.gif",
+  link: "https://colliersaz.github.io/LeasingDeals25/",
+  date: "February 19, 2026"
+},
+  
+{
   title: "Q4 MSCI Update: Phoenix Investment Activity Rebounds",
   description: "In Q4, investment activity in Phoenix increased 20% quarter over quarter and 36.5% year over year, marking the second-highest quarterly volume since the end of 2022.",
   image: "images/sales1.png",
   link: "https://colliersaz.github.io/Q4SalesActivity/",
-  date: "December 8, 2025"
+  date: "February 12, 2026"
 },
   
   {
   title: "Phoenix Industrial Buildings Trend Smaller as Big-Box Pipeline Winds Down",
   description: "Phoenix industrial buildings are trending smaller as the market shifts away from mega big-box development. Over the past five years, the typical new industrial project has become noticeably smaller, reflecting changes in tenant demand and development economics.",
   image: "images/size.jpg",
-  link: "https://colliersaz.github.io/Q4SalesActivity/",
-  date: "February 10, 2025"
+  link: "IndSizeShift.pdf",
+  date: "December 10, 2025"
 },
   {
   title: "Q3 MSCI Update: Phoenix Investment Activity Stabilizes in Q3",
@@ -140,6 +148,7 @@ function updatePaginationButtons() {
 
 // Initial load
 displayProjects();
+
 
 
 
