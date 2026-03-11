@@ -1,7 +1,7 @@
 const projects = [
   {
-  title: "Office Construction Costs Rise Over 70% in Ten Years",
-  description: "Office and medical office construction costs have surged over the past decade, driven by higher material and labor costs, with specialized infrastructure keeping medical office developments consistently more expensive.",
+  title: "Phoenix Office Construction Costs Rise Over 70% in Ten Years",
+  description: "Office and medical office construction costs in Phoenix have surged over the past decade, driven by higher material and labor costs, with specialized infrastructure keeping medical office developments consistently more expensive.",
   image: "images/office_cost.jpg",
   link: "https://colliersaz.github.io/Office-Construction-Cost-/",
   date: "March 5, 2026"
@@ -155,6 +155,7 @@ function updatePaginationButtons() {
 
 // Initial load
 displayProjects();
+
 
 
 
