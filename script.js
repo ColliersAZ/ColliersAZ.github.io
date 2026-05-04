@@ -1,5 +1,13 @@
 const projects = [
   {
+  title: "Metro Phoenix Economic Dashboard",
+  description: "",
+  image: "images/.jpg",
+  link: "https://colliersaz.github.io/PhoenixOverview/",
+  date: "May 1, 2026"
+},
+  
+  {
   title: "Phoenix Office Construction Costs Rise Over 70% in Ten Years",
   description: "Office and medical office construction costs in Phoenix have surged over the past decade, driven by higher material and labor costs, with specialized infrastructure keeping medical office developments consistently more expensive.",
   image: "images/office_cost.jpg",
