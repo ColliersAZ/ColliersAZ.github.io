@@ -1,7 +1,7 @@
 const projects = [
   {
   title: "Metro Phoenix Economic Dashboard",
-  description: "",
+  description: "A data-driven snapshot of Metro Phoenix's key economic indicators — employment, population, inflation, GDP, and major capital investment — compiled from primary sources including the BLS, U.S. Census Bureau, and BEA.",
   image: "images/.jpg",
   link: "https://colliersaz.github.io/PhoenixOverview/",
   date: "May 1, 2026"
