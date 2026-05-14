@@ -1,4 +1,12 @@
 const projects = [
+{
+  title: "Mapping Multifamily Opportunity Across the Phoenix Metro",
+  description: " composite scoring framework that identifies where rental market fundamentals support multifamily investment — and where they don't. Based on 2025 vintage demographic estimates across Arizona zip codes.",
+  image: "images/snapshot.png",
+  link: "https://colliersaz.github.io/Phoenix_Multifamily_Investment/",
+  date: "May 14, 2026"
+},
+  
   {
   title: "Metro Phoenix Economic Dashboard",
   description: "A data-driven snapshot of Metro Phoenix's key economic indicators — employment, population, inflation, GDP, and major capital investment — compiled from primary sources including the BLS, U.S. Census Bureau, and BEA.",
