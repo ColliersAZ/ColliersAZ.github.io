@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapping Multifamily Opportunity Across the Phoenix Metro | Colliers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --deep-blue: #000759;
+    --dark-blue: #25408F;
+    --medium-blue: #1C54F4;
+    --light-blue: #4D93FF;
+    --pale-blue: #C3E6FF;
+    --pale-blue-grey: #DBE5FF;
+    --dark-blue-grey: #56648F;
+    --colliers-yellow: #FFD400;
+    --colliers-red: #ED1B34;
+    --orange: #FA6609;
+    --teal: #2AB6A9;
+    --white: #FFFFFF;
+    --gray: #CCCDD5;
+    --t-healthy: #1C54F4;
+    --t-stable: #2AB6A9;
+    --t-moderate: #FFD400;
+    --t-stressed: #FA6609;
+    --t-distressed: #ED1B34;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Open Sans', Verdana, sans-serif; background: #f5f7fc; color: #1a1a2e; }
+
+  /* HEADER */
+  .header {
+    background: var(--deep-blue);
+    padding: 0 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    border-bottom: 3px solid var(--medium-blue);
+    position: sticky; top: 0; z-index: 1000;
+  }
+  .logo-area { display: flex; align-items: center; gap: 20px; }
+  .logo-box {
+    background: var(--medium-blue);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 8px 16px;
+    letter-spacing: 0.5px;
+  }
+  .logo-tagline {
+    color: var(--pale-blue);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    padding-left: 20px;
+  }
+  .header-right { color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 300; letter-spacing: 1px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--deep-blue) 0%, var(--dark-blue) 60%, #1a3070 100%);
+    padding: 64px 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -60px;
+    width: 400px; height: 400px;
+    border: 1px solid rgba(28,84,244,0.15);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 80px;
+    width: 250px; height: 250px;
+    border: 1px solid rgba(28,84,244,0.1);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .hero-label {
+    color: var(--colliers-yellow);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    color: white;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 100%;
+    margin-bottom: 20px;
+    white-space: nowrap;
+  }
+  .hero h1 span { color: white; }
+  .hero-sub {
+    color: var(--pale-blue);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 100%;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    white-space: nowrap;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+  }
+  .hero-stat { }
+  .hero-stat .num {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .hero-stat .lbl {
+    color: var(--pale-blue);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .hero-divider { width: 1px; background: rgba(255,255,255,0.15); }
+
+  /* CONTENT CONTAINER — constrains readable width across all sections */
+  .content-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* NARRATIVE SECTION */
+  .narrative-section {
+    background: white;
+    padding: 56px 48px;
+    border-bottom: 1px solid #e8ecf5;
+  }
+  .section-label {
+    color: var(--medium-blue);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .narrative-section h2 {
+    color: var(--deep-blue);
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    max-width: 100%;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .narrative-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: start;
+  }
+  .narrative-card {
+    padding: 28px;
+    border-left: 3px solid var(--medium-blue);
+    background: var(--pale-blue-grey);
+    height: 100%;
+  }
+  .narrative-card.invest { border-color: var(--teal); }
+  .narrative-card.avoid { border-color: var(--colliers-red); }
+  .narrative-card h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: var(--dark-blue);
+  }
+  .narrative-card.invest h3 { color: #1a7a4f; }
+  .narrative-card.avoid h3 { color: var(--colliers-red); }
+  .narrative-card p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #3a3a5c;
+    font-weight: 300;
+  }
+  .narrative-full {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .n-block {
+    padding: 28px;
+    background: #f5f7fc;
+    border-top: 2px solid var(--teal);
+  }
+  .n-block.avoid-block {
+    border-top-color: var(--colliers-red);
+  }
+  .n-block h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dark-blue);
+    margin-bottom: 10px;
+  }
+  .n-block p { font-size: 13px; line-height: 1.75; color: #444; font-weight: 300; }
+
+  /* MAP SECTION */
+  .map-section {
+    padding: 48px;
+    background: #f0f3fa;
+  }
+  .map-section h2 {
+    color: var(--deep-blue);
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .map-section .map-sub {
+    color: var(--dark-blue-grey);
+    font-size: 13px;
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .map-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    align-items: stretch;
+  }
+  #map {
+    height: 100%;
+    min-height: 620px;
+    border-radius: 0;
+    box-shadow: 0 4px 24px rgba(0,7,89,0.12);
+    border: 1px solid #d0d8f0;
+  }
+  .map-sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+  .legend-card {
+    background: white;
+    border-top: 3px solid var(--dark-blue);
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,7,89,0.08);
+  }
+  .legend-card h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark-blue);
+    margin-bottom: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 6px 8px;
+    transition: background 0.15s;
+    border-radius: 2px;
+  }
+  .legend-item:hover { background: #f0f3fa; }
+  .legend-item.filtered-out { opacity: 0.35; }
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+  .legend-text { flex: 1; }
+  .legend-text .tier-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .legend-text .tier-range { font-size: 11px; color: #888; }
+  .legend-count { font-size: 11px; font-weight: 700; color: var(--dark-blue); background: var(--pale-blue-grey); padding: 2px 6px; }
+
+  .info-card {
+    background: white;
+    border-top: 3px solid var(--colliers-yellow);
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,7,89,0.08);
+    margin-bottom: 16px;
+    min-height: 200px;
+    flex: 1;
+  }
+  .info-card h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark-blue);
+    margin-bottom: 12px;
+  }
+  .info-placeholder {
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .zip-detail { display: none; }
+  .zip-detail.active { display: block; }
+  .zip-name { font-size: 18px; font-weight: 700; color: var(--deep-blue); margin-bottom: 2px; }
+  .zip-city { font-size: 12px; font-weight: 300; color: #888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .zip-score-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .zip-score-big { font-size: 36px; font-weight: 700; color: var(--dark-blue); }
+  .zip-score-lbl { font-size: 11px; color: #888; }
+  .zip-tier-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .score-bar-wrap { background: #f0f3fa; height: 6px; margin-bottom: 16px; }
+  .score-bar { height: 6px; transition: width 0.4s ease; }
+  .zip-metrics { }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { color: #777; font-weight: 300; }
+  .metric-value { font-weight: 600; color: var(--deep-blue); }
+
+  /* SEARCH */
+  .search-card {
+    background: white;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,7,89,0.08);
+    margin-bottom: 16px;
+    border-top: 3px solid var(--dark-blue);
+  }
+  .search-card h4 { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--dark-blue); margin-bottom: 10px; }
+  #zip-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d8f0;
+    font-size: 13px;
+    font-family: 'Open Sans', Verdana, sans-serif;
+    outline: none;
+    color: var(--deep-blue);
+  }
+  #zip-search:focus { border-color: var(--medium-blue); }
+
+  /* METHODOLOGY */
+  .method-section {
+    background: var(--deep-blue);
+    padding: 56px 48px;
+    color: white;
+  }
+  .method-section .section-label { color: var(--colliers-yellow); }
+  .method-section h2 { color: white; font-size: 26px; font-weight: 700; margin-bottom: 32px; }
+  .method-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 40px;
+  }
+  .method-card {
+    background: rgba(255,255,255,0.06);
+    padding: 24px;
+    border-top: 2px solid var(--medium-blue);
+    transition: background 0.2s;
+  }
+  .method-card:hover { background: rgba(255,255,255,0.1); }
+  .method-weight {
+    color: var(--colliers-yellow);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .method-name {
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .method-desc { color: rgba(195,230,255,0.8); font-size: 12px; line-height: 1.65; font-weight: 300; }
+  .method-exclusions {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid var(--colliers-yellow);
+    padding: 24px 28px;
+  }
+  .method-exclusions h3 { color: white; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .excl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .excl-item { font-size: 12px; color: rgba(195,230,255,0.8); line-height: 1.6; font-weight: 300; }
+  .excl-item strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+  .method-note {
+    margin-top: 28px;
+    font-size: 12px;
+    color: rgba(195,230,255,0.6);
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  /* FOOTER */
+  .footer {
+    background: #000;
+    padding: 28px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-left { color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 300; }
+  .footer-right { color: rgba(255,255,255,0.3); font-size: 11px; }
+
+  /* ── MOBILE RESPONSIVE ─────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+
+    /* Header */
+    .header {
+      padding: 0 20px;
+      height: 56px;
+    }
+    .logo-tagline { display: none; }
+    .header-right { display: none; }
+
+    /* Hero */
+    .hero {
+      padding: 36px 20px 32px;
+    }
+    .hero h1 { font-size: 26px; }
+    .hero-sub { font-size: 13px; margin-bottom: 28px; }
+    .hero-stats {
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-stat .num { font-size: 24px; }
+    .hero-divider { display: none; }
+
+    /* Narrative */
+    .narrative-section { padding: 36px 20px; }
+    .narrative-section h2 { font-size: 20px; margin-bottom: 20px; white-space: normal; }
+    .narrative-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .narrative-full {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .narrative-card { padding: 20px; height: auto; }
+
+    /* Map section */
+    .map-section { padding: 28px 16px; }
+    .map-section h2 { font-size: 20px; }
+    .map-layout {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    #map {
+      height: 380px;
+      min-height: 380px;
+    }
+    .map-sidebar {
+      order: -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .search-card {
+      flex: 1 1 100%;
+      margin-bottom: 0;
+    }
+    .info-card {
+      flex: 1 1 100%;
+      min-height: auto;
+      margin-bottom: 0;
+    }
+    .legend-card {
+      flex: 1 1 100%;
+      margin-bottom: 0;
+    }
+    /* Legend items horizontal on mobile */
+    .legend-card > div:last-child { display: none; }
+    .legend-item {
+      display: inline-flex;
+      width: auto;
+      margin-bottom: 6px;
+      margin-right: 4px;
+      padding: 5px 10px;
+      background: #f5f7fc;
+      border-radius: 2px;
+    }
+    .legend-text .tier-range { display: none; }
+
+    /* Methodology */
+    .method-section { padding: 36px 20px; }
+    .method-section h2 { font-size: 20px; margin-bottom: 20px; }
+    .method-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-bottom: 24px;
+    }
+
+    /* Footer */
+    .footer {
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 22px; white-space: normal; }
+    .hero-sub { font-size: 13px; white-space: normal; margin-bottom: 28px; }
+    .hero-stats { gap: 16px; }
+    .method-grid { grid-template-columns: 1fr; }
+    #map { height: 320px; min-height: 320px; }
+  }
+
+  /* TOOLTIP */
+  .leaflet-tooltip {
+    background: white !important;
+    border: none !important;
+    color: #1a1a2e !important;
+    font-family: 'Open Sans', Verdana, sans-serif !important;
+    font-size: 12px !important;
+    padding: 0 !important;
+    box-shadow: 0 6px 24px rgba(0,7,89,0.18) !important;
+    border-radius: 0 !important;
+    min-width: 200px !important;
+    pointer-events: none !important;
+  }
+  .leaflet-tooltip::before { display: none !important; }
+  .tt-header {
+    padding: 10px 14px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .tt-left {}
+  .tt-zip { font-weight: 700; font-size: 15px; color: white; line-height: 1; }
+  .tt-city { font-size: 10px; font-weight: 300; opacity: 0.82; color: white; letter-spacing: 0.5px; margin-top: 2px; }
+  .tt-score-wrap { text-align: right; }
+  .tt-score { font-weight: 700; font-size: 22px; color: white; line-height: 1; }
+  .tt-score-lbl { font-size: 9px; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; }
+  .tt-tier-bar {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.15);
+  }
+  .tt-body { padding: 10px 14px; background: white; }
+  .tt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f3fa;
+    font-size: 11px;
+  }
+  .tt-row:last-child { border-bottom: none; }
+  .tt-lbl { color: #888; font-weight: 300; }
+  .tt-val { font-weight: 600; color: var(--deep-blue); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-area">
+    <img src="data:image/webp;base64,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" alt="Colliers" style="height:44px;display:block;" />
+  </div>
+  <div class="header-right">Arizona · 2025 · Multifamily Investment Analysis</div>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="text-align:center;">
+  <h1>Mapping Multifamily Opportunity Across the Phoenix Metro</h1>
+  <p class="hero-sub">A composite scoring framework that identifies where rental market fundamentals support multifamily investment — and where they don't. Based on 2025 vintage demographic estimates across Arizona zip codes.</p>
+</section>
+
+<!-- NARRATIVE -->
+<section class="narrative-section">
+  <div class="content-wrap">
+  <div class="section-label">Market Narrative</div>
+  <h2>Where the Fundamentals Point — and Where They Don't</h2>
+
+  <div class="narrative-full">
+    <div class="n-block">
+      <h4>Healthy &amp; Stable Markets</h4>
+      <p>The strongest multifamily fundamentals concentrate in the northeast Phoenix–Scottsdale corridor — Paradise Valley, the Scottsdale interior, and communities along the Loop 101 — where household incomes reach $200,000–$325,000 and rent-to-income ratios run just 9–13%. Central Phoenix zip codes near Midtown and the Camelback corridor add a different angle: lower incomes but renter shares of 75–85%, creating deep tenant pools and strong re-tenanting velocity. The Southeast Valley — Gilbert, east Chandler, south Tempe — rounds out the investable tier with rising incomes and growing young professional demand.</p>
+    </div>
+    <div class="n-block avoid-block">
+      <h4>Stressed &amp; Distressed Markets</h4>
+      <p>The most challenged markets cluster in the western and southwestern corridors — parts of Glendale along Glendale Avenue, southwest Phoenix, Apache Junction, and Sun City. These areas share modest household incomes alongside rent-to-income ratios already near or above the 25–30% healthy threshold, leaving little room for rent growth without triggering turnover. Sun City is particularly constrained: rents are high relative to income, and the owner-dominated, retiree-skewed demographic means the addressable renter pool is structurally thin.</p>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- MAP SECTION -->
+<section class="map-section">
+  <div class="content-wrap">
+  <div class="section-label">Interactive Map</div>
+  <h2>Market Health Index by Zip Code</h2>
+  <p class="map-sub">Click any zip code to view detailed metrics. Filter by tier using the legend. Data: Esri / ACS 2025 vintage estimates.</p>
+  <div class="map-layout">
+    <div id="map"></div>
+    <div class="map-sidebar">
+      <div class="search-card">
+        <h4>Search ZIP</h4>
+        <input type="text" id="zip-search" placeholder="e.g. 85253..." maxlength="5"/>
+      </div>
+      <div class="info-card">
+        <h4>Selected ZIP Code</h4>
+        <div class="info-placeholder" id="info-placeholder">Click a zip code on the map to view its market health metrics.</div>
+        <div class="zip-detail" id="zip-detail"></div>
+      </div>
+      <div class="legend-card">
+        <h4>Market Health Tier</h4>
+        <div class="legend-item" data-tier="Healthy">
+          <div class="legend-dot" style="background:#1C54F4"></div>
+          <div class="legend-text">
+            <div class="tier-name">Healthy</div>
+            <div class="tier-range">Score 80–100</div>
+          </div>
+          <div class="legend-count" id="cnt-Healthy">8</div>
+        </div>
+        <div class="legend-item" data-tier="Stable">
+          <div class="legend-dot" style="background:#2AB6A9"></div>
+          <div class="legend-text">
+            <div class="tier-name">Stable</div>
+            <div class="tier-range">Score 65–79</div>
+          </div>
+          <div class="legend-count" id="cnt-Stable">31</div>
+        </div>
+        <div class="legend-item" data-tier="Moderate">
+          <div class="legend-dot" style="background:#FFD400"></div>
+          <div class="legend-text">
+            <div class="tier-name">Moderate</div>
+            <div class="tier-range">Score 45–64</div>
+          </div>
+          <div class="legend-count" id="cnt-Moderate">74</div>
+        </div>
+        <div class="legend-item" data-tier="Stressed">
+          <div class="legend-dot" style="background:#FA6609"></div>
+          <div class="legend-text">
+            <div class="tier-name">Stressed</div>
+            <div class="tier-range">Score 30–44</div>
+          </div>
+          <div class="legend-count" id="cnt-Stressed">77</div>
+        </div>
+        <div class="legend-item" data-tier="Distressed">
+          <div class="legend-dot" style="background:#ED1B34"></div>
+          <div class="legend-text">
+            <div class="tier-name">Distressed</div>
+            <div class="tier-range">Score 0–29</div>
+          </div>
+          <div class="legend-count" id="cnt-Distressed">152</div>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-weight:300;">Click tier to filter map</div>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section class="method-section">
+  <div class="content-wrap">
+  <div class="section-label">Methodology</div>
+  <h2>How the Index is Built</h2>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-weight">30%</div>
+      <div class="method-name">Income Strength</div>
+      <div class="method-desc">2025 Average Household Income. Higher-income zip codes sustain stronger rents and more stable NOI over time.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-weight">25%</div>
+      <div class="method-name">Renter Market Depth</div>
+      <div class="method-desc">Renter share of total housing units. A deeper renter pool reduces lease-up and re-tenanting risk.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-weight">25%</div>
+      <div class="method-name">Rent Level</div>
+      <div class="method-desc">2025 Median Monthly Contract Rent. Higher rents signal pricing power and market depth.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-weight">20%</div>
+      <div class="method-name">Affordability Ratio</div>
+      <div class="method-desc">Ratio of monthly median rent to monthly average household income — scored in reverse, so a lower ratio scores higher. Above 33% signals tenant stress and turnover risk.</div>
+    </div>
+  </div>
+
+  <div class="method-exclusions">
+    <p style="color:rgba(195,230,255,0.85);font-size:13px;line-height:1.75;font-weight:300;margin-bottom:16px;">
+      Each metric is min-max normalized to a 0–1 scale, then combined using the weights above. The composite is rescaled to a 0–100 index where 100 = strongest market in the dataset (Paradise Valley) and 0 = weakest (Lukachukai).
+    </p>
+    <p style="color:rgba(195,230,255,0.7);font-size:12px;line-height:1.7;font-weight:300;">
+      <strong style="color:rgba(255,255,255,0.85);">Exclusions:</strong> Zip codes with population under 500 were excluded due to statistically unreliable estimates and insufficient market size. Three additional zip codes with missing housing or rent data were also removed.
+    </p>
+  </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left">© 2025 Colliers International · Arizona Research · All data sourced from Esri / ACS 2025 vintage demographic estimates</div>
+  <div class="footer-right">For internal use and client presentation only</div>
+</footer>
+
+<script>
+const ZIP_DATA = [{"zip":"85003","city":"Phoenix","score":72.0,"tier":"Stable","population":15179,"income":105451,"renter_share":77.3,"median_rent":1728,"rent_income":19.7},{"zip":"85004","city":"Phoenix","score":82.1,"tier":"Healthy","population":11786,"income":119676,"renter_share":82.5,"median_rent":1859,"rent_income":18.6},{"zip":"85006","city":"Phoenix","score":46.4,"tier":"Moderate","population":23880,"income":82061,"renter_share":57.2,"median_rent":1291,"rent_income":18.9},{"zip":"85007","city":"Phoenix","score":48.5,"tier":"Moderate","population":14357,"income":92679,"renter_share":54.8,"median_rent":1178,"rent_income":15.3},{"zip":"85008","city":"Phoenix","score":54.0,"tier":"Moderate","population":59955,"income":84832,"renter_share":66.6,"median_rent":1421,"rent_income":20.1},{"zip":"85009","city":"Phoenix","score":32.9,"tier":"Stressed","population":48907,"income":70629,"renter_share":45.7,"median_rent":1026,"rent_income":17.4},{"zip":"85012","city":"Phoenix","score":81.9,"tier":"Healthy","population":8611,"income":154189,"renter_share":61.7,"median_rent":1828,"rent_income":14.2},{"zip":"85013","city":"Phoenix","score":66.9,"tier":"Stable","population":25742,"income":116635,"renter_share":60.6,"median_rent":1716,"rent_income":17.7},{"zip":"85014","city":"Phoenix","score":63.6,"tier":"Moderate","population":27388,"income":112092,"renter_share":61.0,"median_rent":1568,"rent_income":16.8},{"zip":"85015","city":"Phoenix","score":48.6,"tier":"Moderate","population":41399,"income":80266,"renter_share":61.7,"median_rent":1359,"rent_income":20.3},{"zip":"85016","city":"Phoenix","score":73.5,"tier":"Stable","population":37187,"income":155196,"renter_share":50.6,"median_rent":1657,"rent_income":12.8},{"zip":"85017","city":"Phoenix","score":38.2,"tier":"Stressed","population":44455,"income":70063,"renter_share":53.5,"median_rent":1247,"rent_income":21.4},{"zip":"85018","city":"Phoenix","score":81.0,"tier":"Healthy","population":36136,"income":192537,"renter_share":40.2,"median_rent":1807,"rent_income":11.3},{"zip":"85019","city":"Phoenix","score":38.9,"tier":"Stressed","population":29233,"income":77195,"renter_share":48.4,"median_rent":1242,"rent_income":19.3},{"zip":"85020","city":"Phoenix","score":53.9,"tier":"Moderate","population":33956,"income":123882,"renter_share":39.6,"median_rent":1415,"rent_income":13.7},{"zip":"85021","city":"Phoenix","score":54.3,"tier":"Moderate","population":41004,"income":99091,"renter_share":56.2,"median_rent":1423,"rent_income":17.2},{"zip":"85022","city":"Phoenix","score":52.5,"tier":"Moderate","population":51837,"income":109388,"renter_share":42.2,"median_rent":1603,"rent_income":17.6},{"zip":"85023","city":"Phoenix","score":50.9,"tier":"Moderate","population":36639,"income":103458,"renter_share":44.4,"median_rent":1558,"rent_income":18.1},{"zip":"85024","city":"Phoenix","score":57.4,"tier":"Moderate","population":25329,"income":137385,"renter_share":28.4,"median_rent":1797,"rent_income":15.7},{"zip":"85027","city":"Phoenix","score":47.7,"tier":"Moderate","population":37772,"income":101695,"renter_share":38.9,"median_rent":1613,"rent_income":19.0},{"zip":"85028","city":"Phoenix","score":58.5,"tier":"Moderate","population":21054,"income":156504,"renter_share":22.6,"median_rent":1674,"rent_income":12.8},{"zip":"85029","city":"Phoenix","score":42.5,"tier":"Stressed","population":47459,"income":83724,"renter_share":46.8,"median_rent":1431,"rent_income":20.5},{"zip":"85031","city":"Phoenix","score":36.9,"tier":"Stressed","population":29688,"income":81873,"renter_share":38.4,"median_rent":1425,"rent_income":20.9},{"zip":"85032","city":"Phoenix","score":51.1,"tier":"Moderate","population":66442,"income":111548,"renter_share":38.2,"median_rent":1604,"rent_income":17.3},{"zip":"85033","city":"Phoenix","score":38.0,"tier":"Stressed","population":54309,"income":85480,"renter_share":40.9,"median_rent":1195,"rent_income":16.8},{"zip":"85034","city":"Phoenix","score":68.1,"tier":"Stable","population":9190,"income":91789,"renter_share":85.7,"median_rent":1450,"rent_income":19.0},{"zip":"85035","city":"Phoenix","score":39.4,"tier":"Stressed","population":45540,"income":78183,"renter_share":47.7,"median_rent":1308,"rent_income":20.1},{"zip":"85037","city":"Phoenix","score":52.1,"tier":"Moderate","population":59736,"income":106763,"renter_share":43.0,"median_rent":1619,"rent_income":18.2},{"zip":"85040","city":"Phoenix","score":39.1,"tier":"Stressed","population":34659,"income":77598,"renter_share":48.5,"median_rent":1238,"rent_income":19.1},{"zip":"85041","city":"Phoenix","score":39.9,"tier":"Stressed","population":70534,"income":100606,"renter_share":27.9,"median_rent":1500,"rent_income":17.9},{"zip":"85042","city":"Phoenix","score":50.2,"tier":"Moderate","population":47404,"income":124383,"renter_share":30.8,"median_rent":1495,"rent_income":14.4},{"zip":"85043","city":"Phoenix","score":44.1,"tier":"Stressed","population":51278,"income":91571,"renter_share":42.5,"median_rent":1478,"rent_income":19.4},{"zip":"85044","city":"Phoenix","score":61.9,"tier":"Moderate","population":39242,"income":135182,"renter_share":38.5,"median_rent":1771,"rent_income":15.7},{"zip":"85045","city":"Phoenix","score":74.8,"tier":"Stable","population":8221,"income":213066,"renter_share":8.4,"median_rent":2152,"rent_income":12.1},{"zip":"85048","city":"Phoenix","score":69.3,"tier":"Stable","population":35070,"income":177322,"renter_share":24.7,"median_rent":1888,"rent_income":12.8},{"zip":"85050","city":"Phoenix","score":71.9,"tier":"Stable","population":34179,"income":193306,"renter_share":18.9,"median_rent":1967,"rent_income":12.2},{"zip":"85051","city":"Phoenix","score":38.6,"tier":"Stressed","population":45519,"income":83071,"renter_share":42.4,"median_rent":1291,"rent_income":18.6},{"zip":"85053","city":"Phoenix","score":42.1,"tier":"Stressed","population":29636,"income":96871,"renter_share":36.2,"median_rent":1408,"rent_income":17.4},{"zip":"85054","city":"Phoenix","score":85.9,"tier":"Healthy","population":11854,"income":146297,"renter_share":64.3,"median_rent":2175,"rent_income":17.8},{"zip":"85083","city":"Phoenix","score":73.9,"tier":"Stable","population":21641,"income":217029,"renter_share":13.2,"median_rent":1882,"rent_income":10.4},{"zip":"85085","city":"Phoenix","score":73.8,"tier":"Stable","population":35288,"income":161754,"renter_share":43.4,"median_rent":1810,"rent_income":13.4},{"zip":"85086","city":"Phoenix","score":65.5,"tier":"Stable","population":42862,"income":174170,"renter_share":14.7,"median_rent":2063,"rent_income":14.2},{"zip":"85087","city":"New River","score":48.3,"tier":"Moderate","population":10727,"income":148809,"renter_share":8.2,"median_rent":1691,"rent_income":13.6},{"zip":"85118","city":"Gold Canyon","score":33.4,"tier":"Stressed","population":13727,"income":113752,"renter_share":7.0,"median_rent":1514,"rent_income":16.0},{"zip":"85119","city":"Apache Junction","score":29.3,"tier":"Distressed","population":21737,"income":92434,"renter_share":17.4,"median_rent":1365,"rent_income":17.7},{"zip":"85120","city":"Apache Junction","score":19.4,"tier":"Distressed","population":32494,"income":74937,"renter_share":19.7,"median_rent":902,"rent_income":14.4},{"zip":"85121","city":"Bapchule","score":5.8,"tier":"Distressed","population":2252,"income":47090,"renter_share":18.2,"median_rent":200,"rent_income":5.1},{"zip":"85122","city":"Casa Grande","score":33.3,"tier":"Stressed","population":64546,"income":89546,"renter_share":25.9,"median_rent":1420,"rent_income":19.0},{"zip":"85123","city":"Arizona City","score":18.2,"tier":"Distressed","population":9582,"income":66867,"renter_share":24.6,"median_rent":815,"rent_income":14.6},{"zip":"85128","city":"Coolidge","score":29.7,"tier":"Distressed","population":26456,"income":88927,"renter_share":24.3,"median_rent":1150,"rent_income":15.5},{"zip":"85131","city":"Eloy","score":22.0,"tier":"Distressed","population":17435,"income":78207,"renter_share":24.4,"median_rent":715,"rent_income":11.0},{"zip":"85132","city":"Florence","score":28.5,"tier":"Distressed","population":43686,"income":98109,"renter_share":11.8,"median_rent":1365,"rent_income":16.7},{"zip":"85135","city":"Hayden","score":9.3,"tier":"Distressed","population":500,"income":55624,"renter_share":19.0,"median_rent":525,"rent_income":11.3},{"zip":"85137","city":"Kearny","score":21.8,"tier":"Distressed","population":2051,"income":85334,"renter_share":17.0,"median_rent":880,"rent_income":12.4},{"zip":"85138","city":"Maricopa","score":34.9,"tier":"Stressed","population":64021,"income":108005,"renter_share":10.8,"median_rent":1638,"rent_income":18.2},{"zip":"85139","city":"Maricopa","score":40.6,"tier":"Stressed","population":20547,"income":102267,"renter_share":24.8,"median_rent":1659,"rent_income":19.5},{"zip":"85140","city":"San Tan Valley","score":44.0,"tier":"Stressed","population":56651,"income":126571,"renter_share":12.5,"median_rent":1738,"rent_income":16.5},{"zip":"85142","city":"Queen Creek","score":67.8,"tier":"Stable","population":79392,"income":194034,"renter_share":12.1,"median_rent":1937,"rent_income":12.0},{"zip":"85143","city":"San Tan Valley","score":36.3,"tier":"Stressed","population":46584,"income":104023,"renter_share":16.2,"median_rent":1641,"rent_income":18.9},{"zip":"85144","city":"SAN TAN VALLEY","score":42.1,"tier":"Stressed","population":29572,"income":118483,"renter_share":13.8,"median_rent":1769,"rent_income":17.9},{"zip":"85145","city":"Red Rock","score":27.2,"tier":"Distressed","population":2905,"income":92620,"renter_share":9.9,"median_rent":1567,"rent_income":20.3},{"zip":"85172","city":"Stanfield","score":33.6,"tier":"Stressed","population":1048,"income":104346,"renter_share":29.4,"median_rent":731,"rent_income":8.4},{"zip":"85173","city":"Superior","score":15.8,"tier":"Distressed","population":2504,"income":61605,"renter_share":25.9,"median_rent":606,"rent_income":11.8},{"zip":"85192","city":"Winkelman","score":8.7,"tier":"Distressed","population":1366,"income":58356,"renter_share":16.1,"median_rent":492,"rent_income":10.1},{"zip":"85193","city":"Casa Grande","score":22.5,"tier":"Distressed","population":4679,"income":82155,"renter_share":22.9,"median_rent":713,"rent_income":10.4},{"zip":"85194","city":"Casa Grande","score":29.7,"tier":"Distressed","population":9269,"income":99696,"renter_share":9.1,"median_rent":1557,"rent_income":18.7},{"zip":"85201","city":"Mesa","score":48.5,"tier":"Moderate","population":47500,"income":86165,"renter_share":55.5,"median_rent":1431,"rent_income":19.9},{"zip":"85202","city":"Mesa","score":50.3,"tier":"Moderate","population":43332,"income":89565,"renter_share":55.0,"median_rent":1489,"rent_income":19.9},{"zip":"85203","city":"Mesa","score":48.7,"tier":"Moderate","population":36619,"income":109426,"renter_share":38.9,"median_rent":1432,"rent_income":15.7},{"zip":"85204","city":"Mesa","score":41.9,"tier":"Stressed","population":66286,"income":89505,"renter_share":39.9,"median_rent":1496,"rent_income":20.1},{"zip":"85205","city":"Mesa","score":43.6,"tier":"Stressed","population":43795,"income":109406,"renter_share":27.4,"median_rent":1545,"rent_income":16.9},{"zip":"85206","city":"Mesa","score":40.2,"tier":"Stressed","population":37139,"income":90664,"renter_share":31.5,"median_rent":1765,"rent_income":23.4},{"zip":"85207","city":"Mesa","score":50.5,"tier":"Moderate","population":50712,"income":143511,"renter_share":19.2,"median_rent":1532,"rent_income":12.8},{"zip":"85208","city":"Mesa","score":31.1,"tier":"Stressed","population":40636,"income":85761,"renter_share":22.0,"median_rent":1599,"rent_income":22.4},{"zip":"85209","city":"Mesa","score":46.0,"tier":"Moderate","population":46596,"income":110036,"renter_share":25.6,"median_rent":1813,"rent_income":19.8},{"zip":"85210","city":"Mesa","score":47.5,"tier":"Moderate","population":37641,"income":83942,"renter_share":55.4,"median_rent":1447,"rent_income":20.7},{"zip":"85212","city":"Mesa","score":62.1,"tier":"Moderate","population":64533,"income":167078,"renter_share":16.3,"median_rent":1926,"rent_income":13.8},{"zip":"85213","city":"Mesa","score":55.7,"tier":"Moderate","population":34070,"income":148566,"renter_share":21.3,"median_rent":1701,"rent_income":13.7},{"zip":"85215","city":"Mesa","score":52.8,"tier":"Moderate","population":15297,"income":143213,"renter_share":11.3,"median_rent":2010,"rent_income":16.8},{"zip":"85224","city":"Chandler","score":57.2,"tier":"Moderate","population":46180,"income":117036,"renter_share":41.2,"median_rent":1796,"rent_income":18.4},{"zip":"85225","city":"Chandler","score":51.0,"tier":"Moderate","population":73722,"income":108436,"renter_share":38.5,"median_rent":1677,"rent_income":18.6},{"zip":"85226","city":"Chandler","score":64.5,"tier":"Moderate","population":40988,"income":143285,"renter_share":37.9,"median_rent":1787,"rent_income":15.0},{"zip":"85233","city":"Gilbert","score":59.3,"tier":"Moderate","population":39208,"income":142065,"renter_share":30.2,"median_rent":1754,"rent_income":14.8},{"zip":"85234","city":"Gilbert","score":61.2,"tier":"Moderate","population":50684,"income":156950,"renter_share":23.4,"median_rent":1814,"rent_income":13.9},{"zip":"85248","city":"Chandler","score":57.3,"tier":"Moderate","population":37263,"income":150596,"renter_share":19.1,"median_rent":1853,"rent_income":14.8},{"zip":"85249","city":"Chandler","score":74.1,"tier":"Stable","population":50541,"income":206770,"renter_share":11.2,"median_rent":2127,"rent_income":12.3},{"zip":"85250","city":"Scottsdale","score":62.2,"tier":"Moderate","population":16039,"income":158027,"renter_share":23.3,"median_rent":1866,"rent_income":14.2},{"zip":"85251","city":"Scottsdale","score":79.6,"tier":"Stable","population":39251,"income":161591,"renter_share":53.0,"median_rent":1843,"rent_income":13.7},{"zip":"85253","city":"Paradise Valley","score":100.0,"tier":"Healthy","population":17468,"income":325158,"renter_share":11.7,"median_rent":1841,"rent_income":6.8},{"zip":"85254","city":"Scottsdale","score":74.3,"tier":"Stable","population":48994,"income":191666,"renter_share":27.3,"median_rent":1854,"rent_income":11.6},{"zip":"85255","city":"Scottsdale","score":94.1,"tier":"Healthy","population":46278,"income":247148,"renter_share":25.3,"median_rent":2182,"rent_income":10.6},{"zip":"85256","city":"Scottsdale","score":20.1,"tier":"Distressed","population":4978,"income":74370,"renter_share":26.4,"median_rent":467,"rent_income":7.5},{"zip":"85257","city":"Scottsdale","score":67.8,"tier":"Stable","population":34045,"income":136980,"renter_share":45.0,"median_rent":1885,"rent_income":16.5},{"zip":"85258","city":"Scottsdale","score":77.0,"tier":"Stable","population":25369,"income":195442,"renter_share":23.9,"median_rent":2064,"rent_income":12.7},{"zip":"85259","city":"Scottsdale","score":79.6,"tier":"Stable","population":22302,"income":226374,"renter_share":21.1,"median_rent":1810,"rent_income":9.6},{"zip":"85260","city":"Scottsdale","score":78.5,"tier":"Stable","population":40635,"income":174673,"renter_share":40.9,"median_rent":1952,"rent_income":13.4},{"zip":"85262","city":"Scottsdale","score":90.8,"tier":"Healthy","population":13493,"income":275078,"renter_share":5.2,"median_rent":2216,"rent_income":9.7},{"zip":"85263","city":"Rio Verde","score":73.2,"tier":"Stable","population":4172,"income":212417,"renter_share":2.2,"median_rent":2273,"rent_income":12.8},{"zip":"85264","city":"Fort McDowell","score":15.4,"tier":"Distressed","population":1083,"income":93643,"renter_share":9.9,"median_rent":333,"rent_income":4.3},{"zip":"85266","city":"Scottsdale","score":88.7,"tier":"Healthy","population":12044,"income":247307,"renter_share":4.6,"median_rent":2525,"rent_income":12.3},{"zip":"85268","city":"Fountain Hills","score":60.5,"tier":"Moderate","population":24116,"income":169620,"renter_share":16.8,"median_rent":1758,"rent_income":12.4},{"zip":"85281","city":"Tempe","score":60.5,"tier":"Moderate","population":60092,"income":72802,"renter_share":85.1,"median_rent":1763,"rent_income":29.1},{"zip":"85282","city":"Tempe","score":55.6,"tier":"Moderate","population":52951,"income":103583,"renter_share":49.3,"median_rent":1727,"rent_income":20.0},{"zip":"85283","city":"Tempe","score":58.7,"tier":"Moderate","population":42976,"income":118426,"renter_share":45.6,"median_rent":1677,"rent_income":17.0},{"zip":"85284","city":"Tempe","score":76.6,"tier":"Stable","population":18332,"income":210086,"renter_share":18.0,"median_rent":1996,"rent_income":11.4},{"zip":"85286","city":"Chandler","score":76.5,"tier":"Stable","population":57102,"income":175007,"renter_share":38.7,"median_rent":1892,"rent_income":13.0},{"zip":"85288","city":"Tempe","score":65.8,"tier":"Stable","population":18770,"income":95620,"renter_share":71.8,"median_rent":1833,"rent_income":23.0},{"zip":"85295","city":"Gilbert","score":71.9,"tier":"Stable","population":60165,"income":163859,"renter_share":37.7,"median_rent":1852,"rent_income":13.6},{"zip":"85296","city":"Gilbert","score":64.1,"tier":"Moderate","population":54082,"income":159634,"renter_share":24.9,"median_rent":1897,"rent_income":14.3},{"zip":"85297","city":"Gilbert","score":72.5,"tier":"Stable","population":41890,"income":180058,"renter_share":25.2,"median_rent":2022,"rent_income":13.5},{"zip":"85298","city":"Gilbert","score":68.7,"tier":"Stable","population":45601,"income":190375,"renter_share":7.6,"median_rent":2205,"rent_income":13.9},{"zip":"85301","city":"Glendale","score":35.1,"tier":"Stressed","population":62245,"income":61337,"renter_share":57.2,"median_rent":1218,"rent_income":23.8},{"zip":"85302","city":"Glendale","score":41.5,"tier":"Stressed","population":41713,"income":87018,"renter_share":41.7,"median_rent":1467,"rent_income":20.2},{"zip":"85303","city":"Glendale","score":44.5,"tier":"Stressed","population":37788,"income":95606,"renter_share":40.0,"median_rent":1483,"rent_income":18.6},{"zip":"85304","city":"Glendale","score":43.7,"tier":"Stressed","population":27551,"income":112717,"renter_share":24.6,"median_rent":1579,"rent_income":16.8},{"zip":"85305","city":"Glendale","score":65.3,"tier":"Stable","population":20060,"income":134180,"renter_share":42.0,"median_rent":1895,"rent_income":16.9},{"zip":"85306","city":"Glendale","score":44.8,"tier":"Stressed","population":27583,"income":97481,"renter_share":35.8,"median_rent":1663,"rent_income":20.5},{"zip":"85307","city":"Glendale","score":55.3,"tier":"Moderate","population":18889,"income":102074,"renter_share":51.2,"median_rent":1662,"rent_income":19.5},{"zip":"85308","city":"Glendale","score":51.8,"tier":"Moderate","population":66585,"income":124662,"renter_share":27.7,"median_rent":1743,"rent_income":16.8},{"zip":"85310","city":"Glendale","score":60.4,"tier":"Moderate","population":19255,"income":174352,"renter_share":10.9,"median_rent":1874,"rent_income":12.9},{"zip":"85320","city":"Aguila","score":45.3,"tier":"Moderate","population":696,"income":135125,"renter_share":13.0,"median_rent":1604,"rent_income":14.2},{"zip":"85321","city":"Ajo","score":21.5,"tier":"Distressed","population":3102,"income":71048,"renter_share":27.3,"median_rent":820,"rent_income":13.8},{"zip":"85322","city":"Arlington","score":36.9,"tier":"Stressed","population":630,"income":111771,"renter_share":23.8,"median_rent":1078,"rent_income":11.6},{"zip":"85323","city":"Avondale","score":45.2,"tier":"Moderate","population":52843,"income":101750,"renter_share":34.3,"median_rent":1617,"rent_income":19.1},{"zip":"85324","city":"Black Canyon City","score":20.6,"tier":"Distressed","population":2732,"income":87809,"renter_share":16.4,"median_rent":681,"rent_income":9.3},{"zip":"85325","city":"Bouse","score":3.0,"tier":"Distressed","population":840,"income":50029,"renter_share":12.4,"median_rent":571,"rent_income":13.7},{"zip":"85326","city":"Buckeye","score":39.3,"tier":"Stressed","population":87217,"income":112359,"renter_share":17.2,"median_rent":1577,"rent_income":16.8},{"zip":"85329","city":"Cashion","score":22.1,"tier":"Distressed","population":2517,"income":72621,"renter_share":23.3,"median_rent":1169,"rent_income":19.3},{"zip":"85331","city":"Cave Creek","score":70.2,"tier":"Stable","population":31169,"income":195721,"renter_share":8.9,"median_rent":2159,"rent_income":13.2},{"zip":"85332","city":"Congress","score":22.7,"tier":"Distressed","population":2037,"income":103968,"renter_share":6.2,"median_rent":923,"rent_income":10.7},{"zip":"85334","city":"Ehrenberg","score":9.2,"tier":"Distressed","population":658,"income":38206,"renter_share":34.6,"median_rent":494,"rent_income":15.5},{"zip":"85335","city":"El Mirage","score":37.8,"tier":"Stressed","population":36268,"income":95248,"renter_share":27.2,"median_rent":1544,"rent_income":19.5},{"zip":"85336","city":"San Luis","score":17.6,"tier":"Distressed","population":25774,"income":67537,"renter_share":24.8,"median_rent":616,"rent_income":10.9},{"zip":"85337","city":"Gila Bend","score":29.2,"tier":"Distressed","population":2379,"income":77116,"renter_share":37.6,"median_rent":753,"rent_income":11.7},{"zip":"85338","city":"Goodyear","score":50.4,"tier":"Moderate","population":77223,"income":122227,"renter_share":27.3,"median_rent":1714,"rent_income":16.8},{"zip":"85339","city":"Laveen","score":51.4,"tier":"Moderate","population":63031,"income":136761,"renter_share":19.5,"median_rent":1743,"rent_income":15.3},{"zip":"85340","city":"Litchfield Park","score":56.0,"tier":"Moderate","population":44624,"income":152449,"renter_share":14.9,"median_rent":1880,"rent_income":14.8},{"zip":"85342","city":"Morristown","score":27.6,"tier":"Distressed","population":1734,"income":101904,"renter_share":15.5,"median_rent":963,"rent_income":11.3},{"zip":"85344","city":"Parker","score":23.3,"tier":"Distressed","population":9492,"income":71970,"renter_share":30.8,"median_rent":728,"rent_income":12.1},{"zip":"85345","city":"Peoria","score":36.9,"tier":"Stressed","population":66418,"income":86314,"renter_share":32.8,"median_rent":1547,"rent_income":21.5},{"zip":"85346","city":"Quartzsite","score":16.6,"tier":"Distressed","population":2697,"income":61306,"renter_share":26.9,"median_rent":701,"rent_income":13.7},{"zip":"85348","city":"Salome","score":15.1,"tier":"Distressed","population":2410,"income":76880,"renter_share":15.2,"median_rent":542,"rent_income":8.5},{"zip":"85350","city":"Somerton","score":19.9,"tier":"Distressed","population":31018,"income":82857,"renter_share":17.7,"median_rent":713,"rent_income":10.3},{"zip":"85351","city":"Sun City","score":15.6,"tier":"Distressed","population":30099,"income":68114,"renter_share":13.2,"median_rent":1451,"rent_income":25.6},{"zip":"85353","city":"Tolleson","score":43.7,"tier":"Stressed","population":54840,"income":111279,"renter_share":29.0,"median_rent":1428,"rent_income":15.4},{"zip":"85354","city":"Tonopah","score":28.2,"tier":"Distressed","population":8405,"income":96427,"renter_share":17.8,"median_rent":1074,"rent_income":13.4},{"zip":"85355","city":"Waddell","score":52.3,"tier":"Moderate","population":18036,"income":138018,"renter_share":8.1,"median_rent":2228,"rent_income":19.4},{"zip":"85356","city":"Wellton","score":16.8,"tier":"Distressed","population":3850,"income":78233,"renter_share":16.1,"median_rent":628,"rent_income":9.6},{"zip":"85361","city":"Wittmann","score":28.4,"tier":"Distressed","population":8780,"income":110694,"renter_share":9.6,"median_rent":1065,"rent_income":11.5},{"zip":"85362","city":"Yarnell","score":15.3,"tier":"Distressed","population":579,"income":77742,"renter_share":13.5,"median_rent":650,"rent_income":10.0},{"zip":"85363","city":"Youngtown","score":37.3,"tier":"Stressed","population":7580,"income":74625,"renter_share":45.3,"median_rent":1465,"rent_income":23.6},{"zip":"85364","city":"Yuma","score":31.2,"tier":"Stressed","population":75434,"income":78139,"renter_share":38.7,"median_rent":880,"rent_income":13.5},{"zip":"85365","city":"Yuma","score":28.1,"tier":"Distressed","population":55005,"income":89761,"renter_share":20.1,"median_rent":1193,"rent_income":15.9},{"zip":"85367","city":"Yuma","score":17.7,"tier":"Distressed","population":22025,"income":74121,"renter_share":14.4,"median_rent":1150,"rent_income":18.6},{"zip":"85373","city":"Sun City","score":33.2,"tier":"Stressed","population":18580,"income":91911,"renter_share":11.6,"median_rent":2126,"rent_income":27.8},{"zip":"85374","city":"Surprise","score":40.8,"tier":"Stressed","population":42725,"income":101980,"renter_share":24.0,"median_rent":1730,"rent_income":20.4},{"zip":"85375","city":"Sun City West","score":27.8,"tier":"Distressed","population":28643,"income":93133,"renter_share":9.2,"median_rent":1649,"rent_income":21.2},{"zip":"85377","city":"Carefree","score":71.9,"tier":"Stable","population":3657,"income":226219,"renter_share":9.6,"median_rent":1738,"rent_income":9.2},{"zip":"85378","city":"Surprise","score":31.8,"tier":"Stressed","population":9825,"income":79391,"renter_share":32.6,"median_rent":1349,"rent_income":20.4},{"zip":"85379","city":"Surprise","score":52.0,"tier":"Moderate","population":51086,"income":132283,"renter_share":22.7,"median_rent":1767,"rent_income":16.0},{"zip":"85381","city":"Peoria","score":56.1,"tier":"Moderate","population":26641,"income":124363,"renter_share":30.4,"median_rent":1959,"rent_income":18.9},{"zip":"85382","city":"Peoria","score":52.3,"tier":"Moderate","population":44555,"income":121026,"renter_share":28.0,"median_rent":1872,"rent_income":18.6},{"zip":"85383","city":"Peoria","score":64.2,"tier":"Moderate","population":78406,"income":189613,"renter_share":8.3,"median_rent":1922,"rent_income":12.2},{"zip":"85387","city":"Surprise","score":40.6,"tier":"Stressed","population":33478,"income":133922,"renter_share":4.7,"median_rent":1628,"rent_income":14.6},{"zip":"85388","city":"Surprise","score":55.4,"tier":"Moderate","population":38229,"income":144679,"renter_share":20.6,"median_rent":1793,"rent_income":14.9},{"zip":"85390","city":"Wickenburg","score":35.0,"tier":"Stressed","population":10381,"income":113557,"renter_share":19.9,"median_rent":1056,"rent_income":11.2},{"zip":"85392","city":"Avondale","score":51.0,"tier":"Moderate","population":41655,"income":108350,"renter_share":36.9,"median_rent":1756,"rent_income":19.4},{"zip":"85395","city":"Goodyear","score":63.3,"tier":"Moderate","population":44140,"income":153116,"renter_share":26.6,"median_rent":1914,"rent_income":15.0},{"zip":"85396","city":"Buckeye","score":50.6,"tier":"Moderate","population":45785,"income":150885,"renter_share":6.4,"median_rent":1874,"rent_income":14.9},{"zip":"85501","city":"Globe","score":24.2,"tier":"Distressed","population":12272,"income":80544,"renter_share":25.6,"median_rent":798,"rent_income":11.9},{"zip":"85530","city":"Bylas","score":10.8,"tier":"Distressed","population":2153,"income":54131,"renter_share":23.3,"median_rent":173,"rent_income":3.8},{"zip":"85532","city":"Claypool","score":30.7,"tier":"Stressed","population":1131,"income":98193,"renter_share":23.9,"median_rent":926,"rent_income":11.3},{"zip":"85533","city":"Clifton","score":18.9,"tier":"Distressed","population":1852,"income":73549,"renter_share":23.8,"median_rent":554,"rent_income":9.0},{"zip":"85534","city":"Duncan","score":16.9,"tier":"Distressed","population":2575,"income":84410,"renter_share":14.9,"median_rent":479,"rent_income":6.8},{"zip":"85539","city":"Miami","score":21.7,"tier":"Distressed","population":3206,"income":71532,"renter_share":25.5,"median_rent":977,"rent_income":16.4},{"zip":"85540","city":"Morenci","score":55.7,"tier":"Moderate","population":5179,"income":90299,"renter_share":82.9,"median_rent":379,"rent_income":5.0},{"zip":"85541","city":"Payson","score":22.9,"tier":"Distressed","population":23274,"income":80126,"renter_share":20.4,"median_rent":1029,"rent_income":15.4},{"zip":"85542","city":"Peridot","score":10.3,"tier":"Distressed","population":3421,"income":52890,"renter_share":23.0,"median_rent":342,"rent_income":7.8},{"zip":"85543","city":"Pima","score":22.6,"tier":"Distressed","population":4567,"income":83503,"renter_share":19.9,"median_rent":856,"rent_income":12.3},{"zip":"85544","city":"Pine","score":16.9,"tier":"Distressed","population":2895,"income":73342,"renter_share":11.4,"median_rent":1342,"rent_income":22.0},{"zip":"85545","city":"Roosevelt","score":9.4,"tier":"Distressed","population":610,"income":51071,"renter_share":23.1,"median_rent":709,"rent_income":16.7},{"zip":"85546","city":"Safford","score":21.7,"tier":"Distressed","population":21401,"income":76707,"renter_share":24.5,"median_rent":736,"rent_income":11.5},{"zip":"85550","city":"San Carlos","score":19.5,"tier":"Distressed","population":6607,"income":64534,"renter_share":33.5,"median_rent":178,"rent_income":3.3},{"zip":"85552","city":"Thatcher","score":29.7,"tier":"Distressed","population":8201,"income":87370,"renter_share":26.4,"median_rent":1094,"rent_income":15.0},{"zip":"85553","city":"Tonto Basin","score":1.2,"tier":"Distressed","population":1496,"income":48129,"renter_share":10.1,"median_rent":355,"rent_income":8.9},{"zip":"85554","city":"Young","score":5.4,"tier":"Distressed","population":777,"income":54313,"renter_share":13.2,"median_rent":464,"rent_income":10.3},{"zip":"85601","city":"Arivaca","score":14.5,"tier":"Distressed","population":633,"income":76801,"renter_share":15.4,"median_rent":445,"rent_income":7.0},{"zip":"85602","city":"Benson","score":15.6,"tier":"Distressed","population":10928,"income":67921,"renter_share":20.1,"median_rent":702,"rent_income":12.4},{"zip":"85603","city":"Bisbee","score":11.5,"tier":"Distressed","population":6435,"income":54889,"renter_share":23.3,"median_rent":697,"rent_income":15.2},{"zip":"85606","city":"Cochise","score":12.4,"tier":"Distressed","population":1042,"income":70923,"renter_share":12.5,"median_rent":681,"rent_income":11.5},{"zip":"85607","city":"Douglas","score":18.3,"tier":"Distressed","population":19121,"income":56928,"renter_share":34.0,"median_rent":610,"rent_income":12.9},{"zip":"85610","city":"Elfrida","score":14.5,"tier":"Distressed","population":1099,"income":71402,"renter_share":17.9,"median_rent":494,"rent_income":8.3},{"zip":"85611","city":"Elgin","score":22.8,"tier":"Distressed","population":1013,"income":93417,"renter_share":12.4,"median_rent":950,"rent_income":12.2},{"zip":"85613","city":"Fort Huachuca","score":76.8,"tier":"Stable","population":4189,"income":91723,"renter_share":98.0,"median_rent":1649,"rent_income":21.6},{"zip":"85614","city":"Green Valley","score":25.6,"tier":"Distressed","population":27620,"income":89648,"renter_share":14.6,"median_rent":1266,"rent_income":16.9},{"zip":"85615","city":"Hereford","score":22.7,"tier":"Distressed","population":9572,"income":97199,"renter_share":9.8,"median_rent":951,"rent_income":11.7},{"zip":"85616","city":"Huachuca City","score":17.4,"tier":"Distressed","population":5247,"income":68130,"renter_share":21.9,"median_rent":856,"rent_income":15.1},{"zip":"85617","city":"Mc Neal","score":6.9,"tier":"Distressed","population":1113,"income":56697,"renter_share":14.0,"median_rent":525,"rent_income":11.1},{"zip":"85618","city":"Mammoth","score":6.7,"tier":"Distressed","population":1029,"income":54214,"renter_share":15.6,"median_rent":504,"rent_income":11.2},{"zip":"85620","city":"Naco","score":3.0,"tier":"Distressed","population":609,"income":44466,"renter_share":18.0,"median_rent":600,"rent_income":16.2},{"zip":"85621","city":"Nogales","score":26.6,"tier":"Distressed","population":22417,"income":61855,"renter_share":45.2,"median_rent":565,"rent_income":11.0},{"zip":"85622","city":"Green Valley","score":27.7,"tier":"Distressed","population":6493,"income":108309,"renter_share":4.9,"median_rent":1298,"rent_income":14.4},{"zip":"85623","city":"Oracle","score":18.9,"tier":"Distressed","population":5892,"income":90151,"renter_share":11.4,"median_rent":717,"rent_income":9.5},{"zip":"85624","city":"Patagonia","score":18.9,"tier":"Distressed","population":1249,"income":72766,"renter_share":19.6,"median_rent":980,"rent_income":16.2},{"zip":"85625","city":"Pearce","score":8.9,"tier":"Distressed","population":2043,"income":60419,"renter_share":13.9,"median_rent":707,"rent_income":14.0},{"zip":"85626","city":"Pirtleville","score":12.4,"tier":"Distressed","population":913,"income":65611,"renter_share":18.2,"median_rent":455,"rent_income":8.3},{"zip":"85629","city":"Sahuarita","score":43.1,"tier":"Stressed","population":32896,"income":130732,"renter_share":12.1,"median_rent":1583,"rent_income":14.5},{"zip":"85630","city":"Saint David","score":12.2,"tier":"Distressed","population":2684,"income":67224,"renter_share":16.0,"median_rent":545,"rent_income":9.7},{"zip":"85631","city":"San Manuel","score":12.9,"tier":"Distressed","population":3408,"income":62237,"renter_share":20.4,"median_rent":585,"rent_income":11.3},{"zip":"85632","city":"San Simon","score":11.6,"tier":"Distressed","population":1014,"income":55653,"renter_share":23.3,"median_rent":450,"rent_income":9.7},{"zip":"85634","city":"Sells","score":11.7,"tier":"Distressed","population":6093,"income":57626,"renter_share":22.6,"median_rent":305,"rent_income":6.4},{"zip":"85635","city":"Sierra Vista","score":31.4,"tier":"Stressed","population":35797,"income":77337,"renter_share":38.9,"median_rent":947,"rent_income":14.7},{"zip":"85637","city":"Sonoita","score":24.8,"tier":"Distressed","population":1143,"income":105755,"renter_share":9.4,"median_rent":900,"rent_income":10.2},{"zip":"85638","city":"Tombstone","score":16.1,"tier":"Distressed","population":1839,"income":69564,"renter_share":19.5,"median_rent":746,"rent_income":12.9},{"zip":"85641","city":"Vail","score":44.8,"tier":"Stressed","population":33933,"income":144672,"renter_share":8.7,"median_rent":1522,"rent_income":12.6},{"zip":"85643","city":"Willcox","score":18.2,"tier":"Distressed","population":8552,"income":67364,"renter_share":26.1,"median_rent":609,"rent_income":10.8},{"zip":"85645","city":"Amado","score":15.3,"tier":"Distressed","population":1728,"income":94919,"renter_share":9.5,"median_rent":320,"rent_income":4.0},{"zip":"85646","city":"Tubac","score":34.8,"tier":"Stressed","population":1958,"income":105014,"renter_share":11.6,"median_rent":1700,"rent_income":19.4},{"zip":"85648","city":"Rio Rico","score":22.4,"tier":"Distressed","population":21486,"income":87410,"renter_share":17.2,"median_rent":856,"rent_income":11.8},{"zip":"85650","city":"Sierra Vista","score":27.3,"tier":"Distressed","population":14924,"income":101604,"renter_share":11.5,"median_rent":1146,"rent_income":13.5},{"zip":"85653","city":"Marana","score":30.9,"tier":"Stressed","population":26747,"income":119220,"renter_share":9.9,"median_rent":1033,"rent_income":10.4},{"zip":"85658","city":"Marana","score":51.4,"tier":"Moderate","population":17171,"income":154654,"renter_share":10.2,"median_rent":1700,"rent_income":13.2},{"zip":"85701","city":"Tucson","score":59.4,"tier":"Moderate","population":5589,"income":85155,"renter_share":73.9,"median_rent":1548,"rent_income":21.8},{"zip":"85704","city":"Tucson","score":50.8,"tier":"Moderate","population":35445,"income":123134,"renter_share":36.7,"median_rent":1323,"rent_income":12.9},{"zip":"85705","city":"Tucson","score":28.9,"tier":"Distressed","population":58221,"income":54309,"renter_share":54.7,"median_rent":926,"rent_income":20.5},{"zip":"85706","city":"Tucson","score":30.4,"tier":"Stressed","population":54933,"income":71614,"renter_share":41.3,"median_rent":951,"rent_income":15.9},{"zip":"85707","city":"Tucson","score":42.9,"tier":"Stressed","population":858,"income":84176,"renter_share":51.8,"median_rent":1125,"rent_income":16.0},{"zip":"85708","city":"Tucson","score":69.1,"tier":"Stable","population":3641,"income":76573,"renter_share":97.9,"median_rent":1649,"rent_income":25.8},{"zip":"85710","city":"Tucson","score":36.5,"tier":"Stressed","population":56233,"income":81383,"renter_share":41.2,"median_rent":1214,"rent_income":17.9},{"zip":"85711","city":"Tucson","score":36.8,"tier":"Stressed","population":41032,"income":75784,"renter_share":48.2,"median_rent":1067,"rent_income":16.9},{"zip":"85712","city":"Tucson","score":41.2,"tier":"Stressed","population":31825,"income":77323,"renter_share":54.7,"median_rent":1070,"rent_income":16.6},{"zip":"85713","city":"Tucson","score":25.4,"tier":"Distressed","population":44353,"income":68643,"renter_share":34.4,"median_rent":989,"rent_income":17.3},{"zip":"85714","city":"Tucson","score":25.1,"tier":"Distressed","population":14201,"income":63564,"renter_share":38.7,"median_rent":944,"rent_income":17.8},{"zip":"85715","city":"Tucson","score":43.9,"tier":"Stressed","population":20288,"income":106071,"renter_share":35.7,"median_rent":1278,"rent_income":14.5},{"zip":"85716","city":"Tucson","score":43.1,"tier":"Stressed","population":32977,"income":77409,"renter_share":58.5,"median_rent":1046,"rent_income":16.2},{"zip":"85718","city":"Tucson","score":68.2,"tier":"Stable","population":28610,"income":190009,"renter_share":28.2,"median_rent":1480,"rent_income":9.3},{"zip":"85719","city":"Tucson","score":43.0,"tier":"Stressed","population":44194,"income":65435,"renter_share":66.2,"median_rent":1299,"rent_income":23.8},{"zip":"85730","city":"Tucson","score":31.6,"tier":"Stressed","population":38068,"income":88068,"renter_share":27.0,"median_rent":1232,"rent_income":16.8},{"zip":"85735","city":"Tucson","score":25.3,"tier":"Distressed","population":11666,"income":101346,"renter_share":12.2,"median_rent":941,"rent_income":11.1},{"zip":"85736","city":"Tucson","score":15.0,"tier":"Distressed","population":5201,"income":76993,"renter_share":12.3,"median_rent":744,"rent_income":11.6},{"zip":"85737","city":"Tucson","score":55.1,"tier":"Moderate","population":21989,"income":143473,"renter_share":25.4,"median_rent":1615,"rent_income":13.5},{"zip":"85739","city":"Tucson","score":31.3,"tier":"Stressed","population":19050,"income":115986,"renter_share":7.1,"median_rent":1271,"rent_income":13.1},{"zip":"85741","city":"Tucson","score":41.6,"tier":"Stressed","population":33808,"income":96991,"renter_share":36.1,"median_rent":1357,"rent_income":16.8},{"zip":"85742","city":"Tucson","score":50.6,"tier":"Moderate","population":33748,"income":142135,"renter_share":20.0,"median_rent":1540,"rent_income":13.0},{"zip":"85743","city":"Tucson","score":40.4,"tier":"Stressed","population":31227,"income":119396,"renter_share":17.7,"median_rent":1434,"rent_income":14.4},{"zip":"85745","city":"Tucson","score":41.0,"tier":"Stressed","population":37984,"income":103858,"renter_share":35.2,"median_rent":1121,"rent_income":13.0},{"zip":"85746","city":"Tucson","score":28.9,"tier":"Distressed","population":43759,"income":86309,"renter_share":25.2,"median_rent":1126,"rent_income":15.7},{"zip":"85747","city":"Tucson","score":49.6,"tier":"Moderate","population":32369,"income":139964,"renter_share":17.8,"median_rent":1606,"rent_income":13.8},{"zip":"85748","city":"Tucson","score":43.5,"tier":"Stressed","population":17657,"income":135258,"renter_share":19.0,"median_rent":1226,"rent_income":10.9},{"zip":"85749","city":"Tucson","score":55.8,"tier":"Moderate","population":19516,"income":172444,"renter_share":16.5,"median_rent":1418,"rent_income":9.9},{"zip":"85750","city":"Tucson","score":63.5,"tier":"Moderate","population":24675,"income":176581,"renter_share":23.0,"median_rent":1603,"rent_income":10.9},{"zip":"85755","city":"Tucson","score":54.9,"tier":"Moderate","population":19112,"income":163997,"renter_share":8.1,"median_rent":1819,"rent_income":13.3},{"zip":"85756","city":"Tucson","score":29.7,"tier":"Distressed","population":43001,"income":96292,"renter_share":18.9,"median_rent":1171,"rent_income":14.6},{"zip":"85757","city":"Tucson","score":28.4,"tier":"Distressed","population":24021,"income":105418,"renter_share":14.9,"median_rent":959,"rent_income":10.9},{"zip":"85901","city":"Show Low","score":26.6,"tier":"Distressed","population":23761,"income":84709,"renter_share":23.7,"median_rent":1024,"rent_income":14.5},{"zip":"85920","city":"Alpine","score":12.8,"tier":"Distressed","population":573,"income":69184,"renter_share":13.0,"median_rent":836,"rent_income":14.5},{"zip":"85924","city":"Concho","score":1.6,"tier":"Distressed","population":2684,"income":52076,"renter_share":8.2,"median_rent":850,"rent_income":19.6},{"zip":"85925","city":"Eagar","score":19.7,"tier":"Distressed","population":4537,"income":78045,"renter_share":19.1,"median_rent":816,"rent_income":12.5},{"zip":"85928","city":"Heber","score":13.9,"tier":"Distressed","population":1393,"income":77357,"renter_share":11.5,"median_rent":636,"rent_income":9.9},{"zip":"85929","city":"Lakeside","score":27.1,"tier":"Distressed","population":8401,"income":86032,"renter_share":22.4,"median_rent":1109,"rent_income":15.5},{"zip":"85933","city":"Overgaard","score":7.6,"tier":"Distressed","population":3065,"income":62778,"renter_share":10.3,"median_rent":622,"rent_income":11.9},{"zip":"85935","city":"Pinetop","score":25.0,"tier":"Distressed","population":3926,"income":90463,"renter_share":20.9,"median_rent":785,"rent_income":10.4},{"zip":"85936","city":"Saint Johns","score":26.8,"tier":"Distressed","population":3787,"income":103373,"renter_share":20.4,"median_rent":604,"rent_income":7.0},{"zip":"85937","city":"Snowflake","score":20.0,"tier":"Distressed","population":8581,"income":78202,"renter_share":18.0,"median_rent":932,"rent_income":14.3},{"zip":"85938","city":"Springerville","score":23.4,"tier":"Distressed","population":2334,"income":82307,"renter_share":22.8,"median_rent":818,"rent_income":11.9},{"zip":"85939","city":"Taylor","score":17.8,"tier":"Distressed","population":4035,"income":75539,"renter_share":19.7,"median_rent":628,"rent_income":10.0},{"zip":"85940","city":"Vernon","score":14.3,"tier":"Distressed","population":1267,"income":77764,"renter_share":9.8,"median_rent":800,"rent_income":12.3},{"zip":"85941","city":"Whiteriver","score":18.6,"tier":"Distressed","population":9309,"income":58916,"renter_share":34.1,"median_rent":340,"rent_income":6.9},{"zip":"86001","city":"Flagstaff","score":62.7,"tier":"Moderate","population":34020,"income":110630,"renter_share":57.1,"median_rent":1718,"rent_income":18.6},{"zip":"86004","city":"Flagstaff","score":50.2,"tier":"Moderate","population":39061,"income":117894,"renter_share":33.5,"median_rent":1551,"rent_income":15.8},{"zip":"86005","city":"Flagstaff","score":53.5,"tier":"Moderate","population":16987,"income":123484,"renter_share":38.7,"median_rent":1431,"rent_income":13.9},{"zip":"86011","city":"Flagstaff","score":46.6,"tier":"Moderate","population":7602,"income":49190,"renter_share":92.4,"median_rent":1000,"rent_income":24.4},{"zip":"86015","city":"Bellemont","score":49.7,"tier":"Moderate","population":1133,"income":139451,"renter_share":12.8,"median_rent":1819,"rent_income":15.7},{"zip":"86017","city":"Munds Park","score":35.7,"tier":"Stressed","population":1107,"income":129549,"renter_share":11.7,"median_rent":1081,"rent_income":10.0},{"zip":"86018","city":"Parks","score":44.5,"tier":"Stressed","population":691,"income":131935,"renter_share":9.4,"median_rent":1765,"rent_income":16.1},{"zip":"86021","city":"Colorado City","score":40.2,"tier":"Stressed","population":4797,"income":91736,"renter_share":37.3,"median_rent":1372,"rent_income":17.9},{"zip":"86022","city":"Fredonia","score":18.9,"tier":"Distressed","population":1374,"income":71543,"renter_share":21.7,"median_rent":875,"rent_income":14.7},{"zip":"86023","city":"Grand Canyon","score":61.7,"tier":"Moderate","population":2410,"income":104316,"renter_share":80.7,"median_rent":686,"rent_income":7.9},{"zip":"86024","city":"Happy Jack","score":25.6,"tier":"Distressed","population":688,"income":121859,"renter_share":9.0,"median_rent":600,"rent_income":5.9},{"zip":"86025","city":"Holbrook","score":27.2,"tier":"Distressed","population":5630,"income":77591,"renter_share":34.2,"median_rent":713,"rent_income":11.0},{"zip":"86030","city":"Hotevilla","score":2.3,"tier":"Distressed","population":1276,"income":47614,"renter_share":12.0,"median_rent":250,"rent_income":6.3},{"zip":"86032","city":"Joseph City","score":26.1,"tier":"Distressed","population":1314,"income":87889,"renter_share":22.1,"median_rent":930,"rent_income":12.7},{"zip":"86033","city":"Kayenta","score":19.4,"tier":"Distressed","population":8074,"income":56452,"renter_share":36.8,"median_rent":404,"rent_income":8.6},{"zip":"86034","city":"Keams Canyon","score":10.9,"tier":"Distressed","population":1326,"income":38544,"renter_share":32.9,"median_rent":203,"rent_income":6.3},{"zip":"86035","city":"Leupp","score":13.9,"tier":"Distressed","population":2293,"income":74372,"renter_share":16.6,"median_rent":364,"rent_income":5.9},{"zip":"86036","city":"Marble Canyon","score":40.3,"tier":"Stressed","population":672,"income":104972,"renter_share":34.3,"median_rent":1067,"rent_income":12.2},{"zip":"86039","city":"Kykotsmovi Village","score":6.0,"tier":"Distressed","population":786,"income":52856,"renter_share":15.4,"median_rent":638,"rent_income":14.5},{"zip":"86040","city":"Page","score":34.9,"tier":"Stressed","population":9008,"income":107305,"renter_share":26.4,"median_rent":911,"rent_income":10.2},{"zip":"86042","city":"Polacca","score":17.2,"tier":"Distressed","population":1548,"income":66653,"renter_share":23.8,"median_rent":725,"rent_income":13.1},{"zip":"86043","city":"Second Mesa","score":9.3,"tier":"Distressed","population":1539,"income":56894,"renter_share":17.7,"median_rent":700,"rent_income":14.8},{"zip":"86045","city":"Tuba City","score":24.9,"tier":"Distressed","population":10948,"income":82653,"renter_share":28.2,"median_rent":619,"rent_income":9.0},{"zip":"86046","city":"Williams","score":28.4,"tier":"Distressed","population":8412,"income":89886,"renter_share":23.4,"median_rent":1026,"rent_income":13.7},{"zip":"86047","city":"Winslow","score":19.1,"tier":"Distressed","population":16501,"income":60631,"renter_share":31.9,"median_rent":720,"rent_income":14.3},{"zip":"86053","city":"Kaibeto","score":8.8,"tier":"Distressed","population":6596,"income":62766,"renter_share":13.6,"median_rent":425,"rent_income":8.1},{"zip":"86054","city":"Shonto","score":15.7,"tier":"Distressed","population":1723,"income":56000,"renter_share":30.2,"median_rent":503,"rent_income":10.8},{"zip":"86301","city":"Prescott","score":42.1,"tier":"Stressed","population":26920,"income":105051,"renter_share":29.6,"median_rent":1454,"rent_income":16.6},{"zip":"86303","city":"Prescott","score":41.1,"tier":"Stressed","population":18951,"income":108989,"renter_share":26.9,"median_rent":1370,"rent_income":15.1},{"zip":"86305","city":"Prescott","score":41.3,"tier":"Stressed","population":23430,"income":135825,"renter_share":17.2,"median_rent":1126,"rent_income":9.9},{"zip":"86314","city":"Prescott Valley","score":35.9,"tier":"Stressed","population":41610,"income":90495,"renter_share":30.2,"median_rent":1387,"rent_income":18.4},{"zip":"86315","city":"Prescott Valley","score":33.5,"tier":"Stressed","population":11786,"income":107823,"renter_share":7.2,"median_rent":1699,"rent_income":18.9},{"zip":"86320","city":"Ash Fork","score":16.8,"tier":"Distressed","population":992,"income":80783,"renter_share":9.7,"median_rent":975,"rent_income":14.5},{"zip":"86321","city":"Bagdad","score":57.2,"tier":"Moderate","population":1808,"income":84008,"renter_share":88.6,"median_rent":397,"rent_income":5.7},{"zip":"86322","city":"Camp Verde","score":26.4,"tier":"Distressed","population":12850,"income":95825,"renter_share":21.0,"median_rent":753,"rent_income":9.4},{"zip":"86323","city":"Chino Valley","score":22.4,"tier":"Distressed","population":20022,"income":88997,"renter_share":14.2,"median_rent":964,"rent_income":13.0},{"zip":"86324","city":"Clarkdale","score":16.0,"tier":"Distressed","population":5929,"income":70219,"renter_share":16.8,"median_rent":935,"rent_income":16.0},{"zip":"86325","city":"Cornville","score":28.5,"tier":"Distressed","population":5586,"income":97577,"renter_share":15.4,"median_rent":1198,"rent_income":14.7},{"zip":"86326","city":"Cottonwood","score":31.5,"tier":"Stressed","population":24668,"income":80371,"renter_share":33.2,"median_rent":1207,"rent_income":18.0},{"zip":"86327","city":"Dewey","score":28.2,"tier":"Distressed","population":12244,"income":102464,"renter_share":12.2,"median_rent":1172,"rent_income":13.7},{"zip":"86329","city":"Humboldt","score":19.7,"tier":"Distressed","population":1213,"income":69995,"renter_share":24.3,"median_rent":860,"rent_income":14.7},{"zip":"86331","city":"Jerome","score":21.8,"tier":"Distressed","population":540,"income":70496,"renter_share":25.3,"median_rent":1113,"rent_income":18.9},{"zip":"86332","city":"Kirkland","score":15.7,"tier":"Distressed","population":1834,"income":74450,"renter_share":15.0,"median_rent":768,"rent_income":12.4},{"zip":"86333","city":"Mayer","score":15.5,"tier":"Distressed","population":6312,"income":72473,"renter_share":17.5,"median_rent":639,"rent_income":10.6},{"zip":"86334","city":"Paulden","score":25.1,"tier":"Distressed","population":5247,"income":96606,"renter_share":15.6,"median_rent":896,"rent_income":11.1},{"zip":"86335","city":"Rimrock","score":30.4,"tier":"Stressed","population":5241,"income":94081,"renter_share":22.8,"median_rent":1104,"rent_income":14.1},{"zip":"86336","city":"Sedona","score":45.1,"tier":"Moderate","population":11931,"income":118526,"renter_share":22.8,"median_rent":1606,"rent_income":16.3},{"zip":"86337","city":"Seligman","score":10.1,"tier":"Distressed","population":1354,"income":62502,"renter_share":15.9,"median_rent":481,"rent_income":9.2},{"zip":"86351","city":"Sedona","score":46.7,"tier":"Moderate","population":6535,"income":126502,"renter_share":21.8,"median_rent":1555,"rent_income":14.8},{"zip":"86401","city":"Kingman","score":25.8,"tier":"Distressed","population":30540,"income":82315,"renter_share":24.6,"median_rent":991,"rent_income":14.4},{"zip":"86403","city":"Lake Havasu City","score":34.0,"tier":"Stressed","population":18381,"income":87721,"renter_share":30.8,"median_rent":1273,"rent_income":17.4},{"zip":"86404","city":"Lake Havasu City","score":31.6,"tier":"Stressed","population":19635,"income":93723,"renter_share":18.9,"median_rent":1462,"rent_income":18.7},{"zip":"86406","city":"Lake Havasu City","score":30.3,"tier":"Stressed","population":25819,"income":94703,"renter_share":20.1,"median_rent":1220,"rent_income":15.5},{"zip":"86409","city":"Kingman","score":20.8,"tier":"Distressed","population":31107,"income":69915,"renter_share":26.7,"median_rent":829,"rent_income":14.2},{"zip":"86413","city":"Golden Valley","score":6.9,"tier":"Distressed","population":14638,"income":56913,"renter_share":13.1,"median_rent":801,"rent_income":16.9},{"zip":"86426","city":"Fort Mohave","score":22.0,"tier":"Distressed","population":17084,"income":83351,"renter_share":17.0,"median_rent":990,"rent_income":14.3},{"zip":"86429","city":"Bullhead City","score":35.8,"tier":"Stressed","population":7910,"income":94302,"renter_share":34.1,"median_rent":1000,"rent_income":12.7},{"zip":"86432","city":"Littlefield","score":0.4,"tier":"Distressed","population":3233,"income":44825,"renter_share":14.3,"median_rent":796,"rent_income":21.3},{"zip":"86434","city":"Peach Springs","score":28.0,"tier":"Distressed","population":746,"income":64181,"renter_share":47.3,"median_rent":397,"rent_income":7.4},{"zip":"86436","city":"Topock","score":13.2,"tier":"Distressed","population":2258,"income":66937,"renter_share":16.7,"median_rent":678,"rent_income":12.2},{"zip":"86438","city":"Yucca","score":10.8,"tier":"Distressed","population":1220,"income":71027,"renter_share":12.0,"median_rent":450,"rent_income":7.6},{"zip":"86440","city":"Mohave Valley","score":18.2,"tier":"Distressed","population":8027,"income":77244,"renter_share":19.5,"median_rent":615,"rent_income":9.6},{"zip":"86441","city":"Dolan Springs","score":0.8,"tier":"Distressed","population":1827,"income":49081,"renter_share":13.3,"median_rent":1886,"rent_income":46.1},{"zip":"86442","city":"Bullhead City","score":22.8,"tier":"Distressed","population":36077,"income":64922,"renter_share":33.0,"median_rent":1012,"rent_income":18.7},{"zip":"86444","city":"Meadview","score":1.3,"tier":"Distressed","population":1467,"income":51015,"renter_share":8.7,"median_rent":725,"rent_income":17.1},{"zip":"86502","city":"Chambers","score":10.2,"tier":"Distressed","population":2513,"income":47098,"renter_share":26.8,"median_rent":336,"rent_income":8.6},{"zip":"86503","city":"Chinle","score":12.0,"tier":"Distressed","population":10911,"income":45661,"renter_share":31.0,"median_rent":326,"rent_income":8.6},{"zip":"86505","city":"Ganado","score":10.5,"tier":"Distressed","population":19036,"income":48620,"renter_share":27.0,"median_rent":516,"rent_income":12.7},{"zip":"86507","city":"Lukachukai","score":0.0,"tier":"Distressed","population":1503,"income":40680,"renter_share":17.1,"median_rent":625,"rent_income":18.4},{"zip":"86510","city":"Pinon","score":12.7,"tier":"Distressed","population":6963,"income":42788,"renter_share":35.1,"median_rent":396,"rent_income":11.1},{"zip":"86511","city":"Saint Michaels","score":8.2,"tier":"Distressed","population":1054,"income":61237,"renter_share":13.3,"median_rent":470,"rent_income":9.2},{"zip":"86514","city":"Teec Nos Pos","score":8.9,"tier":"Distressed","population":4453,"income":53243,"renter_share":20.3,"median_rent":477,"rent_income":10.8},{"zip":"86538","city":"Many Farms","score":5.9,"tier":"Distressed","population":4455,"income":38482,"renter_share":25.8,"median_rent":317,"rent_income":9.9},{"zip":"86556","city":"Tsaile","score":15.1,"tier":"Distressed","population":2349,"income":44318,"renter_share":37.1,"median_rent":267,"rent_income":7.2}];
+
+const TIER_COLORS = {
+  'Healthy':    '#1C54F4',
+  'Stable':     '#2AB6A9',
+  'Moderate':   '#FFD400',
+  'Stressed':   '#FA6609',
+  'Distressed': '#ED1B34'
+};
+const TIER_TEXT = {
+  'Healthy': '#fff', 'Stable': '#fff', 'Moderate': '#1a1a2e',
+  'Stressed': '#fff', 'Distressed': '#fff'
+};
+
+// Build lookup
+const zipLookup = {};
+ZIP_DATA.forEach(d => { zipLookup[d.zip] = d; });
+
+// Init map centered on Arizona
+const isMobile = window.innerWidth <= 768;
+const map = L.map('map', {
+  zoomControl: true,
+  attributionControl: false,
+  scrollWheelZoom: true,
+  wheelPxPerZoomLevel: 120,
+  zoomSnap: 0.5,
+  zoomDelta: 0.5,
+  tap: true
+})
+  .setView([33.45, -112.07], isMobile ? 7 : 9);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 18
+}).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 18, pane: 'shadowPane'
+}).addTo(map);
+
+// Active tier filter
+let activeFilter = null;
+let selectedLayer = null;
+
+function getColor(score) {
+  if (score >= 80) return TIER_COLORS['Healthy'];
+  if (score >= 65) return TIER_COLORS['Stable'];
+  if (score >= 45) return TIER_COLORS['Moderate'];
+  if (score >= 30) return TIER_COLORS['Stressed'];
+  return TIER_COLORS['Distressed'];
+}
+
+function getTier(score) {
+  if (score >= 80) return 'Healthy';
+  if (score >= 65) return 'Stable';
+  if (score >= 45) return 'Moderate';
+  if (score >= 30) return 'Stressed';
+  return 'Distressed';
+}
+
+function style(feature) {
+  const zip = feature.properties.ZCTA5CE10 || feature.properties.zip || feature.properties.ZIP;
+  const d = zipLookup[zip];
+  const tier = d ? getTier(d.score) : null;
+  const filtered = activeFilter && tier !== activeFilter;
+  return {
+    fillColor: d ? getColor(d.score) : '#ccc',
+    weight: 0.5,
+    opacity: 1,
+    color: '#fff',
+    fillOpacity: filtered ? 0.06 : (d ? 0.78 : 0.2)
+  };
+}
+
+function showZipDetail(d) {
+  document.getElementById('info-placeholder').style.display = 'none';
+  const detail = document.getElementById('zip-detail');
+  detail.innerHTML = '';
+  detail.classList.add('active');
+  const tier = getTier(d.score);
+  const color = TIER_COLORS[tier];
+  const tcolor = TIER_TEXT[tier];
+  detail.innerHTML = `
+    <div class="zip-name">${d.zip}</div>
+    <div class="zip-city">${d.city}</div>
+    <div class="zip-score-row">
+      <div class="zip-score-big">${d.score.toFixed(1)}</div>
+      <div class="zip-score-lbl">/ 100</div>
+    </div>
+    <div class="score-bar-wrap">
+      <div class="score-bar" style="width:${d.score}%;background:${color}"></div>
+    </div>
+    <div class="zip-tier-badge" style="background:${color};color:${tcolor}">${tier}</div>
+    <div class="zip-metrics">
+      <div class="metric-row">
+        <span class="metric-label">Population</span>
+        <span class="metric-value">${d.population.toLocaleString()}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Avg HH Income</span>
+        <span class="metric-value">$${d.income.toLocaleString()}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Renter Share</span>
+        <span class="metric-value">${d.renter_share}%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Median Rent</span>
+        <span class="metric-value">$${d.median_rent.toLocaleString()}/mo</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Rent-to-Income</span>
+        <span class="metric-value" style="color:${d.rent_income > 33 ? '#ED1B34' : (d.rent_income > 28 ? '#FA6609' : '#1a7a4f')}">${d.rent_income}%</span>
+      </div>
+    </div>`;
+}
+
+let geojsonLayer;
+
+function loadGeoJSON() {
+  // Load ZCTA boundaries from a public source
+  fetch('https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/az_arizona_zip_codes_geo.min.json')
+    .then(r => r.json())
+    .then(data => {
+      geojsonLayer = L.geoJSON(data, {
+        style: style,
+        onEachFeature: function(feature, layer) {
+          const zip = feature.properties.ZCTA5CE10 || feature.properties.zip || feature.properties.ZIP;
+          const d = zipLookup[zip];
+          if (!d) return;
+          const tier = getTier(d.score);
+          const color = TIER_COLORS[tier];
+          const tcolor = TIER_TEXT[tier];
+          const rtiColor = d.rent_income > 33 ? '#ED1B34' : (d.rent_income > 28 ? '#FA6609' : '#1a7a4f');
+          layer.bindTooltip(`
+            <div class="tt-header" style="background:${color}">
+              <div class="tt-left">
+                <div class="tt-zip">${d.zip}</div>
+                <div class="tt-city">${d.city}</div>
+              </div>
+              <div class="tt-score-wrap">
+                <div class="tt-score">${d.score.toFixed(1)}</div>
+                <div class="tt-score-lbl">/ 100</div>
+              </div>
+            </div>
+            <div class="tt-tier-bar" style="background:${color}">${tier}</div>
+            <div class="tt-body">
+              <div class="tt-row">
+                <span class="tt-lbl">Population</span>
+                <span class="tt-val">${d.population.toLocaleString()}</span>
+              </div>
+              <div class="tt-row">
+                <span class="tt-lbl">Avg HH Income</span>
+                <span class="tt-val">$${d.income.toLocaleString()}</span>
+              </div>
+              <div class="tt-row">
+                <span class="tt-lbl">Renter Share</span>
+                <span class="tt-val">${d.renter_share}%</span>
+              </div>
+              <div class="tt-row">
+                <span class="tt-lbl">Median Rent</span>
+                <span class="tt-val">$${d.median_rent.toLocaleString()}/mo</span>
+              </div>
+              <div class="tt-row">
+                <span class="tt-lbl">Rent-to-Income</span>
+                <span class="tt-val" style="color:${rtiColor}">${d.rent_income}%</span>
+              </div>
+            </div>
+          `, { sticky: true, direction: 'top', offset: [0, -4] });
+
+          layer.on('click', function() {
+            if (selectedLayer) selectedLayer.setStyle({ weight: 0.5, color: '#fff' });
+            layer.setStyle({ weight: 2.5, color: '#000759' });
+            selectedLayer = layer;
+            showZipDetail(d);
+            map.fitBounds(layer.getBounds(), { padding: [40,40] });
+          });
+          layer.on('mouseover', function() { if (layer !== selectedLayer) layer.setStyle({ weight: 1.5, color: '#25408F' }); });
+          layer.on('mouseout', function() { if (layer !== selectedLayer) layer.setStyle({ weight: 0.5, color: '#fff' }); });
+        }
+      }).addTo(map);
+    })
+    .catch(() => {
+      document.getElementById('map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f0f3fa;flex-direction:column;gap:12px;"><div style="font-size:14px;color:#556;font-family:Open Sans,sans-serif;text-align:center;padding:40px;">Map boundaries require an internet connection to load from a public GeoJSON source.<br><br>In a production environment, host the Arizona ZCTA boundary file locally or via your ArcGIS layer.</div></div>';
+    });
+}
+
+loadGeoJSON();
+
+// Legend filter
+document.querySelectorAll('.legend-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const tier = this.dataset.tier;
+    if (activeFilter === tier) {
+      activeFilter = null;
+      document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('filtered-out'));
+    } else {
+      activeFilter = tier;
+      document.querySelectorAll('.legend-item').forEach(i => {
+        i.classList.toggle('filtered-out', i.dataset.tier !== tier);
+      });
+    }
+    if (geojsonLayer) geojsonLayer.setStyle(style);
+  });
+});
+
+// ZIP search
+document.getElementById('zip-search').addEventListener('input', function() {
+  const val = this.value.trim().padStart(5, '0');
+  const d = zipLookup[val];
+  if (d && geojsonLayer) {
+    geojsonLayer.eachLayer(layer => {
+      const zip = layer.feature?.properties?.ZCTA5CE10 || layer.feature?.properties?.zip;
+      if (zip === val) {
+        if (selectedLayer) selectedLayer.setStyle({ weight: 0.5, color: '#fff' });
+        layer.setStyle({ weight: 2.5, color: '#000759' });
+        selectedLayer = layer;
+        showZipDetail(d);
+        map.fitBounds(layer.getBounds(), { padding: [60,60] });
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
