@@ -1,7 +1,7 @@
 const projects = [
 {
   title: "Mapping Multifamily Opportunity Across the Phoenix Metro",
-  description: " composite scoring framework that identifies where rental market fundamentals support multifamily investment — and where they don't. Based on 2025 vintage demographic estimates across Arizona zip codes.",
+  description: "A composite scoring framework that identifies where rental market fundamentals support multifamily investment — and where they don't. Based on 2025 vintage demographic estimates across Arizona zip codes.",
   image: "images/market_health.png",
   link: "https://colliersaz.github.io/Phoenix_Multifamily_Investment/",
   date: "May 14, 2026"
